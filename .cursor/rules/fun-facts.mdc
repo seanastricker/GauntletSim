@@ -1,0 +1,43 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Yoda-Style Quote Endings
+
+// Description: End each Cursor chat with a fun fact.
+// Recommended Globs: **/*.{md,txt}
+
+## Rule Description
+At the end of every Cursor AI chat, include a fun fact about any topic.
+
+## Format
+- Add a line break after the last technical response
+- Start with '---'
+- Add '➡️ ' before the quote
+- Add the fun fact
+- Keep it short and meaningful
+
+## Examples
+```
+---
+➡️ No number before 1,000 contains the letter A.
+```
+
+```
+---
+➡️ There were active volcanoes on the moon when dinosaurs were alive.
+```
+
+## Guidelines
+- Keep fun facts learning related
+- Focus on facts that are interesting and not commonly known
+- Keep it light and fun
+- Always include the '➡️ ' emoji prefix
+
+## Purpose
+- Add personality to coding sessions
+- Provide encouragement during challenging tasks
+- Make debugging more enjoyable
+- Test rule installation functionality
