@@ -411,16 +411,16 @@ shape = SubResource("RectangleShape2D_Interaction")
 
 [node name="DialogueLabel" type="Label" parent="."]
 offset_left = -50.0
-offset_top = -60.0
+offset_top = -98.0
 offset_right = 50.0
-offset_bottom = -40.0
+offset_bottom = -75.0
 horizontal_alignment = 1
 
 [node name="NameLabel" type="Label" parent="."]
 offset_left = -25.0
-offset_top = -45.0
+offset_top = -70.0
 offset_right = 25.0
-offset_bottom = -25.0
+offset_bottom = -47.0
 horizontal_alignment = 1
 
 [node name="InteractionPrompt" type="Label" parent="."]
