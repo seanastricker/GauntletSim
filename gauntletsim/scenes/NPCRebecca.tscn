@@ -1,13 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://ifjfnjmh02yi"]
+[gd_scene load_steps=12 format=3 uid="uid://ifjfnjmh02yi"]
 
 [ext_resource type="Script" uid="uid://c5h3evbi268rl" path="res://scripts/VisibleSocialNPC.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cdyt47y1wbg2" path="res://assets/characters/rebeccanpc.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Body"]
 size = Vector2(26, 44)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_Interaction"]
-size = Vector2(65, 44)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_1"]
 atlas = ExtResource("2")
@@ -55,9 +52,12 @@ animations = [{
 "texture": SubResource("AtlasTexture_idle_right_6")
 }],
 "loop": true,
-"name": "idle_down",
+"name": &"idle_down",
 "speed": 5.0
 }]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Interaction"]
+size = Vector2(26, 72)
 
 [node name="NPCRebecca" type="CharacterBody2D"]
 script = ExtResource("1")
@@ -71,13 +71,13 @@ shape = SubResource("RectangleShape2D_Body")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_1")
-animation = "idle_down"
+animation = &"idle_down"
 offset = Vector2(0, -16)
 
 [node name="Area2D" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-position = Vector2(19.5, -22)
+position = Vector2(0, -8)
 shape = SubResource("RectangleShape2D_Interaction")
 
 [node name="DialogueLabel" type="Label" parent="."]

@@ -28,7 +28,7 @@ extends CharacterBody2D
 			name_label.text = player_name
 			name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 			name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-			name_label.add_theme_constant_override("outline_size", 2)
+			name_label.add_theme_constant_override("outline_size", 4)
 
 # UI references
 @onready var health_label: Label = $UI/StatsDisplay/HealthLabel
@@ -53,19 +53,19 @@ func _ready() -> void:
 	# Add outlines to UI labels
 	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	name_label.add_theme_constant_override("outline_size", 2)
+	name_label.add_theme_constant_override("outline_size", 4)
 	
 	health_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	health_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	health_label.add_theme_constant_override("outline_size", 2)
+	health_label.add_theme_constant_override("outline_size", 4)
 	
 	social_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	social_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	social_label.add_theme_constant_override("outline_size", 2)
+	social_label.add_theme_constant_override("outline_size", 4)
 	
 	ccat_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	ccat_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	ccat_label.add_theme_constant_override("outline_size", 2)
+	ccat_label.add_theme_constant_override("outline_size", 4)
 	
 	update_ui()
 	

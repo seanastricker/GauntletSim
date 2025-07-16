@@ -22,15 +22,15 @@ func _ready():
 	# Add outlines
 	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	name_label.add_theme_constant_override("outline_size", 2)
+	name_label.add_theme_constant_override("outline_size", 4)
 	
 	dialogue_label.add_theme_color_override("font_color", Color(1, 1, 1))
 	dialogue_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	dialogue_label.add_theme_constant_override("outline_size", 2)
+	dialogue_label.add_theme_constant_override("outline_size", 4)
 
 	interaction_prompt.add_theme_color_override("font_color", Color(1, 1, 1))
 	interaction_prompt.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	interaction_prompt.add_theme_constant_override("outline_size", 2)
+	interaction_prompt.add_theme_constant_override("outline_size", 4)
 
 	area.body_entered.connect(_on_body_entered)
 	area.body_exited.connect(_on_body_exited)

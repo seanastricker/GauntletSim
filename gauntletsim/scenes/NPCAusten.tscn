@@ -391,7 +391,7 @@ animations = [{
 [node name="NPCAusten" type="CharacterBody2D"]
 script = ExtResource("1")
 npc_name = "Austen"
-dialogue = "The coffee machine is broken again."
+dialogue = "Silicon Valley should be far more afraid of drugs"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, -23.5)

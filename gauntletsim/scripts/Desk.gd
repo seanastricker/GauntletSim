@@ -6,7 +6,7 @@ extends Area2D
 func _ready():
     interaction_prompt.add_theme_color_override("font_color", Color(1, 1, 1))
     interaction_prompt.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-    interaction_prompt.add_theme_constant_override("outline_size", 2)
+    interaction_prompt.add_theme_constant_override("outline_size", 4)
     body_entered.connect(_on_body_entered)
     body_exited.connect(_on_body_exited)
 
