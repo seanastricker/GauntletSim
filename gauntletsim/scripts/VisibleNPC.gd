@@ -1,4 +1,4 @@
-extends Node2D
+extends CharacterBody2D
 
 @export var npc_name: String = "NPC"
 @export var dialogue: String = "Hello, player!"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://g4fiswq8lhyj"]
+[gd_scene load_steps=20 format=3 uid="uid://g4fiswq8lhyj"]
 
 [ext_resource type="PackedScene" uid="uid://cwmn48r6ahadw" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://bv5j0i1iwoxee" path="res://assets/Office_Design_1.png" id="2"]
@@ -8,14 +8,89 @@
 [ext_resource type="PackedScene" uid="uid://ifjfnjmh02yi" path="res://scenes/NPCRebecca.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bmh70wgw1byut" path="res://scenes/VendingMachine.tscn" id="7"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Top"]
+size = Vector2(346, 62)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Bottom"]
+size = Vector2(398, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Left"]
+size = Vector2(20, 202)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Right"]
+size = Vector2(11, 362)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Pillar"]
+size = Vector2(61, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Left2"]
+size = Vector2(10, 170)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Top2"]
+size = Vector2(128, 60)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Kitchen"]
+size = Vector2(190, 75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_AustenDesk"]
+size = Vector2(124, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_PlayerDesk"]
+size = Vector2(122, 33)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_AustenDesk2"]
+size = Vector2(40, 54)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_PlayerDesk2"]
+size = Vector2(40, 52)
+
 [node name="Main" type="Node2D"]
 
 [node name="OfficeBackground" type="Sprite2D" parent="."]
 texture = ExtResource("2")
 centered = false
 
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 2
+collision_mask = 0
+
+[node name="TopWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(225, 32)
+shape = SubResource("RectangleShape2D_Top")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="BottomWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(198, 358)
+shape = SubResource("RectangleShape2D_Bottom")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="LeftWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(-10, 261)
+shape = SubResource("RectangleShape2D_Left")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="RightWall" type="CollisionShape2D" parent="Walls"]
+position = Vector2(391.5, 185)
+shape = SubResource("RectangleShape2D_Right")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="CenterPillar" type="CollisionShape2D" parent="Walls"]
+position = Vector2(192.5, 202)
+shape = SubResource("RectangleShape2D_Pillar")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="LeftWall2" type="CollisionShape2D" parent="Walls"]
+position = Vector2(57, 86)
+shape = SubResource("RectangleShape2D_Left2")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="TopWall2" type="CollisionShape2D" parent="Walls"]
+position = Vector2(62, 192)
+shape = SubResource("RectangleShape2D_Top2")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
 [node name="Player" parent="." instance=ExtResource("1")]
-position = Vector2(17, 314)
+position = Vector2(22, 306)
 
 [node name="Desk" parent="." instance=ExtResource("3")]
 position = Vector2(304, 217)
@@ -27,13 +102,60 @@ position = Vector2(243, 87)
 position = Vector2(144, 93)
 
 [node name="NPCRebecca" parent="." instance=ExtResource("6")]
-position = Vector2(80, 245)
-
-[node name="VendingMachine" parent="." instance=ExtResource("7")]
-position = Vector2(935, 180)
+position = Vector2(76, 256)
 
 [node name="VendingMachine2" parent="." instance=ExtResource("7")]
 position = Vector2(287, 328)
+
+[node name="KitchenWall" type="StaticBody2D" parent="."]
+position = Vector2(330, 290)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KitchenWall"]
+position = Vector2(-40, -26.5)
+shape = SubResource("RectangleShape2D_Kitchen")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="AustenDesk" type="StaticBody2D" parent="."]
+position = Vector2(144, 115)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AustenDesk"]
+position = Vector2(-20, -10)
+shape = SubResource("RectangleShape2D_AustenDesk")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="PlayerDesk" type="StaticBody2D" parent="."]
+position = Vector2(304, 237)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDesk"]
+position = Vector2(19, -71.5)
+shape = SubResource("RectangleShape2D_PlayerDesk")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="AustenDesk2" type="StaticBody2D" parent="."]
+position = Vector2(144, 150)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AustenDesk2"]
+position = Vector2(-71, -6)
+shape = SubResource("RectangleShape2D_AustenDesk2")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="PlayerDesk2" type="StaticBody2D" parent="."]
+position = Vector2(304, 270)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDesk2"]
+position = Vector2(68, -63)
+shape = SubResource("RectangleShape2D_PlayerDesk2")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(200, 200)

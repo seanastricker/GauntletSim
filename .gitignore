@@ -1,0 +1,46 @@
+# Godot-specific ignores
+.godot/
+*.translation
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+obj/
+bin/
+
+# User-generated content
+data/
+user_data/
+
+# Asset-specific ignores (optional)
+# *.png.import
+# *.jpg.import
+# *.ogg.import
+# *.wav.import
+# *.tscn.import
+# *.tres.import
+# *.res.import
+
+# Environment file
+.env
+
+# Secrets
+*.secret
+
+# IDE-specific ignores
+.idea/
+.vscode/
+*.swp
+*~
+*.bak
+*.orig
+*.tmp
+
+# Mac-specific ignores
+.DS_Store
+
+# Windows-specific ignores
+Thumbs.db
+desktop.ini 

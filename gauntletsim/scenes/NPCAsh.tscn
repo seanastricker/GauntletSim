@@ -1,27 +1,35 @@
-[gd_scene load_steps=4 format=3 uid="uid://df6mvfutgs6a8"]
+[gd_scene load_steps=5 format=3 uid="uid://df6mvfutgs6a8"]
 
-[ext_resource type="Script" path="res://scripts/VisibleNPC.gd" id="1"]
+[ext_resource type="Script" uid="uid://dfuwv6ne0yab3" path="res://scripts/VisibleNPC.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cyxibrim848bh" path="res://assets/characters/ashnpc.png" id="2"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(16, 16)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Body"]
+size = Vector2(29.5, 47.5)
 
-[node name="NPCAsh" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Interaction"]
+size = Vector2(59, 48)
+
+[node name="NPCAsh" type="CharacterBody2D"]
 script = ExtResource("1")
-dialogue = "Just Submit"
 npc_name = "Ash"
+dialogue = "Just Submit"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.75, -23.25)
+shape = SubResource("RectangleShape2D_Body")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 scale = Vector2(2, 2)
 texture = ExtResource("2")
+offset = Vector2(0, -16)
 region_enabled = true
 region_rect = Rect2(0, 0, 16, 32)
-offset = Vector2(0, -16)
 
 [node name="Area2D" type="Area2D" parent="."]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
-shape = SubResource("RectangleShape2D_1")
+position = Vector2(13.5, -23)
+shape = SubResource("RectangleShape2D_Interaction")
 
 [node name="DialogueLabel" type="Label" parent="."]
 offset_left = -50.0
@@ -38,10 +46,9 @@ offset_bottom = -25.0
 horizontal_alignment = 1
 
 [node name="InteractionPrompt" type="Label" parent="."]
+visible = false
 offset_left = -50.0
 offset_top = -20.0
 offset_right = 50.0
-offset_bottom = 0.0
 text = "Press 'E' to talk"
 horizontal_alignment = 1
-visible = false
