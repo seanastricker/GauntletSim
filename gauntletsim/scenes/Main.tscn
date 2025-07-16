@@ -1,3 +1,29 @@
-[gd_scene load_steps=1 format=3]
- 
-[node name="Main" type="Node2D"] 
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" uid="uid://c6a7vbu5i1d6q" path="res://scenes/Player.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://cih8euqg5bi0g" path="res://assets/Office_Design_1.png" id="2"]
+[ext_resource type="PackedScene" uid="uid://dpsa6f6w0b8w6" path="res://scenes/Desk.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://bxcjq6cvef4j" path="res://scenes/NPCAsh.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://byhvm6e2y8hge" path="res://scenes/NPCAusten.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://dwusw2wm5ajkh" path="res://scenes/NPCRebecca.tscn" id="6"]
+
+[node name="Main" type="Node2D"]
+
+[node name="OfficeBackground" type="Sprite2D" parent="."]
+texture = ExtResource("2")
+centered = false
+
+[node name="Player" parent="." instance=ExtResource("1")]
+position = Vector2(500, 300)
+
+[node name="Desk" parent="." instance=ExtResource("3")]
+position = Vector2(350, 250)
+
+[node name="NPCAsh" parent="." instance=ExtResource("4")]
+position = Vector2(200, 200)
+
+[node name="NPCAusten" parent="." instance=ExtResource("5")]
+position = Vector2(600, 150)
+
+[node name="NPCRebecca" parent="." instance=ExtResource("6")]
+position = Vector2(800, 400) 

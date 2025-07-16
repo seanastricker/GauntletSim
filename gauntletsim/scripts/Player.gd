@@ -9,7 +9,7 @@ extends CharacterBody2D
 @export var speed: float = 200.0
 
 # Player identification
-@export var player_name: String = "Sean" : set = set_player_name
+@export var player_name: String = "" : set = set_player_name
 
 # UI references
 @onready var health_label: Label = $UI/StatsDisplay/HealthLabel
@@ -26,6 +26,7 @@ var decay_rate: float = 1.0  # Stats decrease by 1 every decay_rate seconds
 var interaction_cooldowns: Dictionary = {}
 
 func _ready() -> void:
+	player_name = PlayerData.player_name
 	setup_decay_timer()
 	update_ui()
 	
