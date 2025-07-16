@@ -71,10 +71,10 @@ func handle_movement() -> void:
 				else:
 					animated_sprite.play("walk_up")
 		else:
-			# Idle animation - use last direction
-			if animated_sprite.animation.begins_with("walk_"):
-				var direction = animated_sprite.animation.split("_")[1]
-				animated_sprite.play("idle_" + direction)
+			# Stop the animation when not moving
+			animated_sprite.stop()
+			# Set to first frame of current animation
+			animated_sprite.frame = 0
 
 func setup_decay_timer() -> void:
 	"""Initialize the stat decay system"""
