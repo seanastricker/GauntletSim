@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://ifjfnjmh02yi"]
+[gd_scene load_steps=11 format=3 uid="uid://ifjfnjmh02yi"]
 
 [ext_resource type="Script" uid="uid://c5h3evbi268rl" path="res://scripts/VisibleSocialNPC.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cdyt47y1wbg2" path="res://assets/characters/rebeccanpc.png" id="2"]
@@ -9,6 +9,56 @@ size = Vector2(26, 44)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Interaction"]
 size = Vector2(65, 44)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_1"]
+atlas = ExtResource("2")
+region = Rect2(288, 32, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_2"]
+atlas = ExtResource("2")
+region = Rect2(304, 32, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_3"]
+atlas = ExtResource("2")
+region = Rect2(320, 32, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_4"]
+atlas = ExtResource("2")
+region = Rect2(336, 32, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_5"]
+atlas = ExtResource("2")
+region = Rect2(352, 32, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_idle_right_6"]
+atlas = ExtResource("2")
+region = Rect2(368, 32, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_idle_right_6")
+}],
+"loop": true,
+"name": "idle_down",
+"speed": 5.0
+}]
+
 [node name="NPCRebecca" type="CharacterBody2D"]
 script = ExtResource("1")
 npc_name = "Rebecca"
@@ -18,12 +68,11 @@ dialogue = "Who broke the bathroom?"
 position = Vector2(0, -22)
 shape = SubResource("RectangleShape2D_Body")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(2, 2)
-texture = ExtResource("2")
+sprite_frames = SubResource("SpriteFrames_1")
+animation = "idle_down"
 offset = Vector2(0, -16)
-region_enabled = true
-region_rect = Rect2(0, 0, 16, 32)
 
 [node name="Area2D" type="Area2D" parent="."]
 

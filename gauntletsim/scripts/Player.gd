@@ -44,6 +44,8 @@ var decay_rate: float = 10.0  # Stats decrease by 1 every 10 seconds
 # Interaction cooldowns
 var interaction_cooldowns: Dictionary = {}
 
+var last_direction = Vector2(0, 1) # Default to facing down
+
 func _ready() -> void:
 	player_name = PlayerData.player_name
 	setup_decay_timer()
@@ -73,15 +75,18 @@ func _ready() -> void:
 		var rect_shape = RectangleShape2D.new()
 		rect_shape.size = Vector2(32, 32)
 		collision_shape.shape = rect_shape
+	
+	# Set initial animation
+	update_animation(Vector2.ZERO)
 
 func _physics_process(_delta: float) -> void:
-	handle_movement()
+	var input_vector = get_input_vector()
+	velocity = input_vector * speed
 	move_and_slide()
+	update_animation(input_vector)
 
-func handle_movement() -> void:
-	"""Handle player input and movement"""
+func get_input_vector() -> Vector2:
 	var input_vector = Vector2.ZERO
-	
 	if Input.is_action_pressed("ui_right"):
 		input_vector.x += 1
 	if Input.is_action_pressed("ui_left"):
@@ -90,29 +95,35 @@ func handle_movement() -> void:
 		input_vector.y += 1
 	if Input.is_action_pressed("ui_up"):
 		input_vector.y -= 1
-		
-	input_vector = input_vector.normalized()
-	velocity = input_vector * speed
-	
-	# Handle animations
-	if animated_sprite:
-		if velocity.length() > 0:
-			# Walking animations based on direction
-			if abs(velocity.x) > abs(velocity.y):
-				if velocity.x > 0:
-					animated_sprite.play("walk_right")
-				else:
-					animated_sprite.play("walk_left")
-			else:
-				if velocity.y > 0:
-					animated_sprite.play("walk_down")
-				else:
-					animated_sprite.play("walk_up")
+	return input_vector.normalized()
+
+func update_animation(input_vector: Vector2) -> void:
+	if not animated_sprite:
+		return
+
+	if input_vector != Vector2.ZERO:
+		last_direction = input_vector
+
+	var anim_direction = "down"
+	if abs(last_direction.x) > abs(last_direction.y):
+		if last_direction.x > 0:
+			anim_direction = "right"
 		else:
-			# Stop the animation when not moving
-			animated_sprite.stop()
-			# Set to first frame of current animation
-			animated_sprite.frame = 0
+			anim_direction = "left"
+	else:
+		if last_direction.y > 0:
+			anim_direction = "down"
+		else:
+			anim_direction = "up"
+			
+	var anim_prefix = "walk"
+	if input_vector == Vector2.ZERO:
+		anim_prefix = "idle"
+		
+	var new_animation = anim_prefix + "_" + anim_direction
+	
+	if animated_sprite.animation != new_animation or not animated_sprite.is_playing():
+		animated_sprite.play(new_animation)
 
 func setup_decay_timer() -> void:
 	"""Initialize the stat decay system"""
