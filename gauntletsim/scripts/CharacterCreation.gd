@@ -3,7 +3,6 @@ extends Control
 
 @onready var name_edit: LineEdit = $CenterContainer/VBoxContainer/NameEdit
 @onready var start_button: Button = $CenterContainer/VBoxContainer/StartButton
-@onready var label: Label = $CenterContainer/VBoxContainer/Label
 @onready var texture_rect: TextureRect = $CenterContainer/VBoxContainer/HBoxContainer/TextureRect
 @onready var previous_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/PreviousButton
 @onready var next_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/NextButton
@@ -26,7 +25,6 @@ func _ready():
 	next_button.pressed.connect(_on_next_button_pressed)
 	name_edit.grab_focus()
 	
-	label.add_theme_font_size_override("font_size", 48)
 	name_edit.add_theme_font_size_override("font_size", 48)
 	start_button.add_theme_font_size_override("font_size", 48)
 	

@@ -23,6 +23,16 @@ This document serves as a log for the game development project. It will be updat
 ## Daily Progress Updates
 *A log of daily activities, achievements, and blockers.*
 
+### Recent Development Sprint
+- **Goal:** Implement a fully functional character selection screen and ensure the chosen character is used in-game.
+- **Accomplishments:**
+  - **Character Creation UI:** Overhauled the scene to include a background image and a new UI section for sprite selection, featuring a preview area and next/previous buttons.
+  - **Sprite Selection Logic:** Implemented GDScript logic to load a list of available character sprites (including the original `sean` sprite and new `matt` and `radin` sprites) and allow the user to cycle through them.
+  - **Data Persistence:** Created a `PlayerData` singleton to store the player's chosen name and sprite path, successfully passing the selection from the creation scene to the main game scene.
+  - **Dynamic Sprite Loading:** Updated the `Player` script to dynamically load the selected spritesheet and generate the necessary `SpriteFrames` and `AtlasTexture` resources at runtime.
+- **Challenges:** Faced significant challenges with animation coordinates and automated tooling, which required extensive debugging.
+- **Plan for Tomorrow:** Continue with core gameplay development, potentially focusing on expanding NPC interactions or implementing new stat-influencing activities.
+
 ### YYYY-MM-DD
 - **Today's Goal:** ...
 - **Accomplishments:** ...
@@ -44,6 +54,21 @@ This document serves as a log for the game development project. It will be updat
 
 ## Challenges Faced and Solutions Found
 *A log of specific technical or conceptual hurdles and how they were overcome.*
+
+### Challenge: Player animations were incorrect after implementing dynamic sprite loading.
+- **Context:** After successfully loading new character sprites, their animations in-game were broken (e.g., wrong direction, incorrect frames). The logic that worked for the original `sean_spritesheet.png` did not work for the new ones.
+- **Solution:** The issue was that the new spritesheets had a different internal layout (frame order and coordinates) than the original. The fix involved reading the original, working `Player.tscn` to find the exact `x` and `y` coordinates for each of the `sean` sprite's animations. This correct mapping was then hard-coded into the `Player.gd` script's `_ready` function, which dynamically builds the `SpriteFrames` resource. This ensures any spritesheet following the same layout will animate correctly.
+- **Key Takeaway:** When dynamically generating resources from assets, you cannot assume the assets share the same layout. Using a known-good asset as a "source of truth" for layout information is a reliable debugging and implementation strategy.
+
+### Challenge: UI elements resized incorrectly when entering fullscreen.
+- **Context:** After increasing UI size on the character creation screen using the `scale` property, the elements would shrink back to their original size in fullscreen mode.
+- **Solution:** The `scale` property does not work well with Godot's layout system. The correct solution was to remove the `scale` property and instead control the UI size by setting the `theme_override_font_sizes/font_size` property on the `Label`, `LineEdit`, and `Button` nodes.
+- **Key Takeaway:** For responsive UI in Godot, manipulate properties the layout system understands (like font size or minimum size) rather than applying transformations like `scale`.
+
+### Challenge: Automated file edits repeatedly corrupted Godot scene files (`.tscn`).
+- **Context:** Throughout the session, the AI's automated edits to `.tscn` files frequently resulted in malformed files that Godot could not parse.
+- **Solution:** The immediate workaround was a cycle of attempting the edit, reverting the change via `git` or direct user instruction, and then trying a more precise edit. In several cases, the most reliable solution was for the AI to provide the complete, corrected file content in the chat for manual copy-pasting.
+- **Key Takeaway:** Automated tooling for complex text formats like `.tscn` can be unreliable. Version control is essential for quick recovery. When automation fails, falling back to manual correction is a necessary and effective solution.
 
 ### Challenge: [Brief description of the problem]
 - **Context:** ...
