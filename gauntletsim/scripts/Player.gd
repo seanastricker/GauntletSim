@@ -20,7 +20,7 @@ extends CharacterBody2D
 
 # Stat decay system
 var decay_timer: Timer
-var decay_rate: float = 1.0  # Stats decrease by 1 every decay_rate seconds
+var decay_rate: float = 10.0  # Stats decrease by 1 every 10 seconds
 
 # Interaction cooldowns
 var interaction_cooldowns: Dictionary = {}
@@ -40,6 +40,8 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	handle_movement()
 	move_and_slide()
+
+	print("Player Position: ", global_position)
 
 func handle_movement() -> void:
 	"""Handle player input and movement"""

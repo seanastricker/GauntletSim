@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=2 format=3 uid="uid://dttmwnotiou1s"]
 
-[ext_resource type="Texture2D" path="res://assets/office/6_Office_Designs/Office_Design_1.png" id="1_office"]
+[ext_resource type="Texture2D" uid="uid://c0k1xg3mnql0b" path="res://assets/office/6_Office_Designs/Office_Design_1.png" id="1_office"]
 
 [node name="Office" type="Node2D"]
 
@@ -19,4 +19,4 @@ zoom = Vector2(1.5, 1.5)
 position = Vector2(640, 360)
 scale = Vector2(3, 3)
 texture = ExtResource("1_office")
-modulate = Color(1, 1, 1, 1) 
+modulate = Color(1, 1, 1, 1)

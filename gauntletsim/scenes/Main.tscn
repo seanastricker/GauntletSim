@@ -1,11 +1,12 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3 uid="uid://g4fiswq8lhyj"]
 
-[ext_resource type="PackedScene" uid="uid://c6a7vbu5i1d6q" path="res://scenes/Player.tscn" id="1"]
-[ext_resource type="Texture2D" uid="uid://cih8euqg5bi0g" path="res://assets/Office_Design_1.png" id="2"]
-[ext_resource type="PackedScene" uid="uid://dpsa6f6w0b8w6" path="res://scenes/Desk.tscn" id="3"]
-[ext_resource type="PackedScene" uid="uid://bxcjq6cvef4j" path="res://scenes/NPCAsh.tscn" id="4"]
-[ext_resource type="PackedScene" uid="uid://byhvm6e2y8hge" path="res://scenes/NPCAusten.tscn" id="5"]
-[ext_resource type="PackedScene" uid="uid://dwusw2wm5ajkh" path="res://scenes/NPCRebecca.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1"]
+[ext_resource type="Texture2D" uid="uid://bv5j0i1iwoxee" path="res://assets/Office_Design_1.png" id="2"]
+[ext_resource type="PackedScene" uid="uid://jbg8q881wx2g" path="res://scenes/Desk.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/NPCAsh.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/NPCAusten.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://scenes/NPCRebecca.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://scenes/VendingMachine.tscn" id="7"]
 
 [node name="Main" type="Node2D"]
 
@@ -14,16 +15,24 @@ texture = ExtResource("2")
 centered = false
 
 [node name="Player" parent="." instance=ExtResource("1")]
-position = Vector2(500, 300)
+position = Vector2(17, 314)
 
 [node name="Desk" parent="." instance=ExtResource("3")]
 position = Vector2(350, 250)
 
 [node name="NPCAsh" parent="." instance=ExtResource("4")]
-position = Vector2(200, 200)
+position = Vector2(243, 87)
 
 [node name="NPCAusten" parent="." instance=ExtResource("5")]
-position = Vector2(600, 150)
+position = Vector2(144, 93)
 
 [node name="NPCRebecca" parent="." instance=ExtResource("6")]
-position = Vector2(800, 400) 
+position = Vector2(80, 245)
+
+[node name="VendingMachine" parent="." instance=ExtResource("7")]
+position = Vector2(935, 180)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(200, 200)
+zoom = Vector2(4, 4)
+enabled = true
