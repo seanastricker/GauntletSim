@@ -1,15 +1,34 @@
 extends CharacterBody2D
 
 # Player stats with min/max constraints
-@export var health: int = 50 : set = set_health
-@export var social: int = 50 : set = set_social  
-@export var ccat_score: int = 50 : set = set_ccat_score
+@export var health: int = 50:
+	set(value):
+		health = clamp(value, 0, 50)
+		if health_label:
+			update_ui()
+@export var social: int = 50:
+	set(value):
+		social = clamp(value, 0, 50)
+		if social_label:
+			update_ui()
+@export var ccat_score: int = 50:
+	set(value):
+		ccat_score = clamp(value, 0, 50)
+		if ccat_label:
+			update_ui()
 
 # Movement configuration
 @export var speed: float = 200.0
 
 # Player identification
-@export var player_name: String = "" : set = set_player_name
+@export var player_name: String = "":
+	set(value):
+		player_name = value
+		if name_label:
+			name_label.text = player_name
+			name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+			name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+			name_label.add_theme_constant_override("outline_size", 2)
 
 # UI references
 @onready var health_label: Label = $UI/StatsDisplay/HealthLabel
@@ -28,6 +47,24 @@ var interaction_cooldowns: Dictionary = {}
 func _ready() -> void:
 	player_name = PlayerData.player_name
 	setup_decay_timer()
+	
+	# Add outlines to UI labels
+	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	name_label.add_theme_constant_override("outline_size", 2)
+	
+	health_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	health_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	health_label.add_theme_constant_override("outline_size", 2)
+	
+	social_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	social_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	social_label.add_theme_constant_override("outline_size", 2)
+	
+	ccat_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	ccat_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	ccat_label.add_theme_constant_override("outline_size", 2)
+	
 	update_ui()
 	
 	# Set up collision shape if needed
@@ -40,8 +77,6 @@ func _ready() -> void:
 func _physics_process(_delta: float) -> void:
 	handle_movement()
 	move_and_slide()
-
-	print("Player Position: ", global_position)
 
 func handle_movement() -> void:
 	"""Handle player input and movement"""
@@ -95,31 +130,18 @@ func _on_decay_timer_timeout() -> void:
 
 # Stat modification functions with bounds checking
 func modify_health(amount: int) -> void:
-	health = clamp(health + amount, 0, 50)
+	self.health = health + amount
 
 func modify_social(amount: int) -> void:
-	social = clamp(social + amount, 0, 50)
+	self.social = social + amount
 
 func modify_ccat_score(amount: int) -> void:
-	ccat_score = clamp(ccat_score + amount, 0, 50)
+	self.ccat_score = ccat_score + amount
 
-# Stat setters that trigger UI updates
-func set_health(value: int) -> void:
-	health = clamp(value, 0, 50)
-	update_ui()
-
-func set_social(value: int) -> void:
-	social = clamp(value, 0, 50)
-	update_ui()
-
-func set_ccat_score(value: int) -> void:
-	ccat_score = clamp(value, 0, 50)
-	update_ui()
+# Stat setters that trigger UI updates - no longer needed
 
 func set_player_name(value: String) -> void:
-	player_name = value
-	if name_label:
-		name_label.text = player_name
+	self.player_name = value
 
 func update_ui() -> void:
 	"""Update the stats display UI"""
@@ -165,10 +187,14 @@ func save_player_data() -> Dictionary:
 
 func load_player_data(data: Dictionary) -> void:
 	"""Load player data from saved data"""
-	player_name = data.get("name", "Player")
-	health = data.get("health", 50)
-	social = data.get("social", 50)
-	ccat_score = data.get("ccat_score", 50)
+	self.player_name = data.get("name", "Player")
+	self.health = data.get("health", 50)
+	self.social = data.get("social", 50)
+	self.ccat_score = data.get("ccat_score", 50)
 	global_position.x = data.get("position_x", 0)
 	global_position.y = data.get("position_y", 0)
 	update_ui() 
+
+func interact_with_social_npc():
+	modify_social(5)
+	print(player_name + " talked to a social NPC. Social +5") 

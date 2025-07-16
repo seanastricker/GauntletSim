@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://ifjfnjmh02yi"]
 
-[ext_resource type="Script" uid="uid://bntt5pbky8frn" path="res://scripts/SocialNPC.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/VisibleSocialNPC.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cdyt47y1wbg2" path="res://assets/characters/rebeccanpc.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]

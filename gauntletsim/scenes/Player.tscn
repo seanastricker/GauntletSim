@@ -222,7 +222,7 @@ shape = SubResource("RectangleShape2D_1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_1")
-animation = "idle_down"
+animation = &"idle_down"
 offset = Vector2(0, -16)
 
 [node name="PlaceholderSprite" type="ColorRect" parent="."]
@@ -244,6 +244,7 @@ offset_left = 10.0
 offset_top = -200.0
 offset_right = 400.0
 offset_bottom = -20.0
+grow_vertical = 0
 scale = Vector2(2, 2)
 
 [node name="HealthLabel" type="Label" parent="UI/StatsDisplay"]

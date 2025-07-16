@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://crsxowshmlq6l"]
 
-[ext_resource type="Script" uid="uid://hnorlddvsj7m" path="res://scripts/NPC.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/VisibleNPC.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ccwnf4lqvsq4e" path="res://assets/characters/austennpc.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]

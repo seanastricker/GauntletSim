@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3 uid="uid://g4fiswq8lhyj"]
 
-[ext_resource type="PackedScene" path="res://scenes/Player.tscn" id="1"]
+[ext_resource type="PackedScene" uid="uid://cwmn48r6ahadw" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://bv5j0i1iwoxee" path="res://assets/Office_Design_1.png" id="2"]
 [ext_resource type="PackedScene" uid="uid://jbg8q881wx2g" path="res://scenes/Desk.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/NPCAsh.tscn" id="4"]
-[ext_resource type="PackedScene" path="res://scenes/NPCAusten.tscn" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/NPCRebecca.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/VendingMachine.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://df6mvfutgs6a8" path="res://scenes/NPCAsh.tscn" id="4"]
+[ext_resource type="PackedScene" uid="uid://crsxowshmlq6l" path="res://scenes/NPCAusten.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://ifjfnjmh02yi" path="res://scenes/NPCRebecca.tscn" id="6"]
+[ext_resource type="PackedScene" uid="uid://bmh70wgw1byut" path="res://scenes/VendingMachine.tscn" id="7"]
 
 [node name="Main" type="Node2D"]
 
@@ -18,7 +18,7 @@ centered = false
 position = Vector2(17, 314)
 
 [node name="Desk" parent="." instance=ExtResource("3")]
-position = Vector2(350, 250)
+position = Vector2(304, 217)
 
 [node name="NPCAsh" parent="." instance=ExtResource("4")]
 position = Vector2(243, 87)
@@ -32,7 +32,9 @@ position = Vector2(80, 245)
 [node name="VendingMachine" parent="." instance=ExtResource("7")]
 position = Vector2(935, 180)
 
+[node name="VendingMachine2" parent="." instance=ExtResource("7")]
+position = Vector2(287, 328)
+
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(200, 200)
 zoom = Vector2(4, 4)
-enabled = true
