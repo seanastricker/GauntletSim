@@ -48,6 +48,35 @@ var last_direction = Vector2(0, 1) # Default to facing down
 
 func _ready() -> void:
 	player_name = PlayerData.player_name
+	
+	if PlayerData.player_sprite_path:
+		var sprite_sheet = load(PlayerData.player_sprite_path)
+		var new_sprite_frames = SpriteFrames.new()
+		
+		var anim_definitions = {
+			"idle_down": {"y": 32, "x_start": 288, "frames": 6},
+			"idle_up": {"y": 32, "x_start": 96, "frames": 6},
+			"idle_left": {"y": 32, "x_start": 192, "frames": 6},
+			"idle_right": {"y": 32, "x_start": 0, "frames": 6},
+			"walk_down": {"y": 64, "x_start": 288, "frames": 6},
+			"walk_up": {"y": 64, "x_start": 96, "frames": 6},
+			"walk_left": {"y": 64, "x_start": 192, "frames": 6},
+			"walk_right": {"y": 64, "x_start": 0, "frames": 6}
+		}
+
+		for anim_name in anim_definitions:
+			var anim_data = anim_definitions[anim_name]
+			new_sprite_frames.add_animation(anim_name)
+			new_sprite_frames.set_animation_loop(anim_name, true)
+			new_sprite_frames.set_animation_speed(anim_name, 5.0)
+			for i in range(anim_data["frames"]):
+				var atlas_texture = AtlasTexture.new()
+				atlas_texture.atlas = sprite_sheet
+				atlas_texture.region = Rect2(anim_data["x_start"] + (i * 16), anim_data["y"], 16, 32)
+				new_sprite_frames.add_frame(anim_name, atlas_texture)
+
+		animated_sprite.sprite_frames = new_sprite_frames
+
 	setup_decay_timer()
 	
 	# Add outlines to UI labels

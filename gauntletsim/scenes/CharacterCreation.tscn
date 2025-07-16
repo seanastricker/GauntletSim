@@ -45,6 +45,24 @@ theme_override_font_sizes/font_size = 48
 placeholder_text = "Player Name"
 alignment = 1
 
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="PreviousButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "<"
+
+[node name="TextureRect" type="TextureRect" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(64, 128)
+stretch_mode = 5
+texture = ExtResource("2_c45y5")
+
+[node name="NextButton" type="Button" parent="CenterContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = ">"
+
 [node name="StartButton" type="Button" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 48

@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 PlayerData="*res://scripts/PlayerData.gd"
 
+[internationalization]
+
+locale/test="en"
+
 [input]
 
 ui_accept={
