@@ -220,7 +220,7 @@ script = ExtResource("1")
 shape = SubResource("RectangleShape2D_1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2(5, 5)
+scale = Vector2(2, 2)
 sprite_frames = SubResource("SpriteFrames_1")
 animation = "idle_down"
 offset = Vector2(0, -16)
