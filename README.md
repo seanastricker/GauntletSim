@@ -49,6 +49,13 @@ cd GauntletSim
 
 4. Select the `project.godot` file and click "Import & Edit"
 
+### How to Play
+
+1. **Character Creation**: On the first screen, enter your desired player name and use the "<" and ">" buttons to select your character sprite.
+2. **Start Game**: Click the "Start Game" button to enter the main game world.
+3. **Movement**: Use the arrow keys or WASD to move your character around the environment.
+4. **Interaction**: Press the "E" key or Space bar when near an object or NPC to interact with them.
+
 ### Running the Game
 
 1. In Godot, press `F5` or click the "Play" button
@@ -83,6 +90,7 @@ The project is currently in **Phase 1: Single-Player Foundation** focusing on:
 - ✅ Office scene implementation
 - ✅ Core stat system (0-50 range)
 - ✅ NPC implementation
+- ✅ Character creation and sprite selection
 - 🔄 Interaction system with cooldowns
 - 🔄 UI for stat display
 
