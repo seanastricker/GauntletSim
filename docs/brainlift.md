@@ -42,10 +42,10 @@ This document serves as a log for the game development project. It will be updat
 
 ## AI Prompts and Interactions
 *A collection of key prompts, AI responses, and reflections on what worked well or could be improved.*
-*Prompting with exact coordinates of the sprite sheet and of the scenes was extremely helpful*
-*Gemini seems to react better to positive feedback than negative - a serious improvement*
-*I began adding memories so I don't have to repeat myself as much*
-*Providing images of Godot editor does not seem to help, it actually seems to confuse Gemini more*
+- **Prompting with exact coordinates of the sprite sheet and of the scenes was extremely helpful**
+- **Gemini seems to react better to positive feedback than negative - a serious improvement**
+- **I began adding memories so I don't have to repeat myself as much**
+- **Providing images of Godot editor does not seem to help, it actually seems to confuse Gemini more**
 
 ## Challenges Faced and Solutions Found
 *A log of specific technical or conceptual hurdles and how they were overcome.*
