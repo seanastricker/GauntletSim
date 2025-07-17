@@ -16,7 +16,6 @@ GauntletSim is a social life simulation RPG with real-time multiplayer support. 
 - **Stat Management System**: Balance Health, Social, and CCAT Score with meaningful trade-offs
 - **Dynamic Environment**: Multiple locations including office, apartments, restaurants, gym, and parks
 - **Character Customization**: Choose from various character sprites and customize your appearance
-- **Persistent Progress**: Character data and stats save between sessions
 - **Activity Cooldowns**: Strategic timing required for stat optimization
 
 ## 🛠️ Technology Stack
@@ -25,7 +24,7 @@ GauntletSim is a social life simulation RPG with real-time multiplayer support. 
 - **Language**: GDScript
 - **Networking**: Godot's built-in MultiplayerAPI
 - **Platform**: Desktop (Windows, macOS, Linux)
-- **Assets**: Premium character and environment assets from Elements Envato
+- **Assets**: Premium character and environment assets from LimeZu on itch.io
 
 ## 📋 Prerequisites
 
@@ -53,26 +52,25 @@ cd GauntletSim
 
 1. **Character Creation**: On the first screen, enter your desired player name and use the "<" and ">" buttons to select your character sprite.
 2. **Start Game**: Click the "Start Game" button to enter the main game world.
-3. **Movement**: Use the arrow keys or WASD to move your character around the environment.
-4. **Interaction**: Press the "E" key or Space bar when near an object or NPC to interact with them.
+3. **Movement**: Use the arrow keys to move your character around the environment.
+4. **Interaction**: Press the "E" key when near an object or NPC to interact with them.
 
 ### Running the Game
 
 1. In Godot, press `F5` or click the "Play" button
 2. The game will launch in debug mode
-3. Use arrow keys or WASD to move your character
+3. Use arrow keys to move your character
 
 ## 🎯 Gameplay
 
 ### Controls
 
-- **Movement**: Arrow keys or WASD
-- **Interact**: E key or Space bar
-- **Menu**: ESC key
+- **Movement**: Arrow keys
+- **Interact**: E key
 
 ### Current Locations
 
-- **Office**: Work activities that increase CCAT Score but decrease Health and Social
+- **Office**: Work activities that increase CCAT Score but decrease Health and Social, interact with Rebecca to increase Social, eat a snack from vending machine to increase Health
   - NPCs: Ash, Rebecca, and Austen (office workers)
 
 ### Planned Locations
@@ -91,15 +89,16 @@ The project is currently in **Phase 1: Single-Player Foundation** focusing on:
 - ✅ Core stat system (0-50 range)
 - ✅ NPC implementation
 - ✅ Character creation and sprite selection
-- 🔄 Interaction system with cooldowns
-- 🔄 UI for stat display
+- ✅ Interaction system with cooldowns
+- ✅ UI for stat display
+- 🔄 Depth levels implementation
 
 ### Roadmap
 
 **Phase 2: Content Expansion**
+- Win/Lose Logic with World Timer
 - Additional locations (Apartment, Bar, Gym, Park)
 - More activities and interactions
-- Save/load system
 - Enhanced UI and feedback
 
 **Phase 3: Multiplayer Integration**
@@ -148,7 +147,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👥 Contact
 
-**Developer**: Sean Astricker  
+**Developer**: Sean A Stricker  
 **GitHub**: [@seanastricker](https://github.com/seanastricker)  
 **Project Link**: [https://github.com/seanastricker/GauntletSim](https://github.com/seanastricker/GauntletSim)
 
