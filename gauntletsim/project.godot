@@ -19,10 +19,6 @@ config/icon="res://icon.svg"
 
 PlayerData="*res://scripts/PlayerData.gd"
 
-[internationalization]
-
-locale/test="en"
-
 [input]
 
 ui_accept={
@@ -40,6 +36,10 @@ print_coords={
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":4194313,"physical_keycode":4194313,"key_label":2,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
+
+[internationalization]
+
+locale/test="en"
 
 [layer_names]
 

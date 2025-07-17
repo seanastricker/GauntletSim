@@ -38,7 +38,7 @@ func _on_start_button_pressed():
 	PlayerData.player_name = player_name
 	PlayerData.player_sprite_path = character_sprites[current_sprite_index]
 	
-	get_tree().change_scene_to_file("res://scenes/Main.tscn")
+	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
 
 func _on_previous_button_pressed():
 	current_sprite_index = (current_sprite_index - 1 + character_sprites.size()) % character_sprites.size()
