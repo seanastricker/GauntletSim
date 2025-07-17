@@ -6,13 +6,14 @@ This document serves as a log for the game development project. It will be updat
 *This section will document the tools, tutorials, documentation, and other resources used throughout the project.*
 
 - **Primary AI Assistant:** Gemini 2.5 Pro (via Cursor)
-- **Game Asset Library:** Elements Envato (recommended)
+- **Game Asset Library:** LimeZu on itch.io
+- **Collaboration with Others** Primary source of gaining understanding and tools to look into
 - ...
 
 ## Learning Pathway Decisions and Pivots
 *This section will capture the rationale behind technology choices and any changes in direction during the project.*
 
-- **Initial Decision (2024-07-29):** After analyzing the multiplayer life-simulation game concept, we have chosen to proceed with **Path 1: Godot and GDScript**.
+- **Initial Decision (2025-07-14):** After analyzing the multiplayer life-simulation game concept, we have chosen to proceed with **Path 1: Godot and GDScript**.
     - **Rationale:** This stack was selected as the optimal choice for a first-time game developer aiming to build a systems-driven RPG.
     - **Comparison:**
         - **Unity (Path 3)** was considered powerful but with a learning curve that was too steep, potentially hindering the project's "Learning Velocity" goal.
@@ -33,24 +34,18 @@ This document serves as a log for the game development project. It will be updat
 - **Challenges:** Faced significant challenges with animation coordinates and automated tooling, which required extensive debugging.
 - **Plan for Tomorrow:** Continue with core gameplay development, potentially focusing on expanding NPC interactions or implementing new stat-influencing activities.
 
-### YYYY-MM-DD
-- **Today's Goal:** ...
-- **Accomplishments:** ...
-- **Challenges:** ...
-- **Plan for Tomorrow:** ...
+### 2025-07-16
+- **Today's Goal:** Just Submit
+- **Accomplishments:** Implemented collisions, good UI start screen, player name/sprite customization, 3 unique NPCs, walk/idle animations, interacting with environment, stat display, stat decay, stat increase from interactions
+- **Challenges:** understanding sprite sheets, implementing animations, understanding the hierarchy of nodes in Godot, trying to use Opus to vibe code (Gemini has been way better), positioning of characters and objects on the map
+- **Plan for Tomorrow:** Implement Multiplayer functionality
 
 ## AI Prompts and Interactions
 *A collection of key prompts, AI responses, and reflections on what worked well or could be improved.*
-
-### Prompt Example:
-\`\`\`
-[Paste a significant or effective prompt here]
-\`\`\`
-**AI Response Summary:**
-[Summarize the AI's output]
-
-**Reflection:**
-[Note why this interaction was valuable or how it could have been better]
+*Prompting with exact coordinates of the sprite sheet and of the scenes was extremely helpful*
+*Gemini seems to react better to positive feedback than negative - a serious improvement*
+*I began adding memories so I don't have to repeat myself as much*
+*Providing images of Godot editor does not seem to help, it actually seems to confuse Gemini more*
 
 ## Challenges Faced and Solutions Found
 *A log of specific technical or conceptual hurdles and how they were overcome.*
@@ -70,7 +65,7 @@ This document serves as a log for the game development project. It will be updat
 - **Solution:** The immediate workaround was a cycle of attempting the edit, reverting the change via `git` or direct user instruction, and then trying a more precise edit. In several cases, the most reliable solution was for the AI to provide the complete, corrected file content in the chat for manual copy-pasting.
 - **Key Takeaway:** Automated tooling for complex text formats like `.tscn` can be unreliable. Version control is essential for quick recovery. When automation fails, falling back to manual correction is a necessary and effective solution.
 
-### Challenge: [Brief description of the problem]
-- **Context:** ...
-- **Solution:** ...
-- **Key Takeaway:** ...
+### Challenge: Positioning on Coordinate Plane
+- **Context:** Cursor/Gemini was struggling with understanding the exact locations of people and objects.
+- **Solution:** Had Gemini guide me through how to utilize Godot and determine coordinate points of objects, people, etc.
+- **Key Takeaway:** Sometimes it is better to have AI guide you rather than telling AI what to do.
