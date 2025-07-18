@@ -94,6 +94,9 @@ func _on_connected_to_server():
 	"""Called when successfully connected to server as client"""
 	status_label.text = "Connected! Waiting for game to start..."
 	send_player_data.rpc_id(1, PlayerData.player_name, PlayerData.player_sprite_path)
+	
+	# Request current player list from server
+	request_player_list.rpc_id(1)
 
 func _on_connection_failed():
 	"""Called when connection to server fails"""
@@ -142,12 +145,20 @@ func start_game():
 func _on_peer_connected(id: int):
 	"""Called when a new peer connects to the server"""
 	print("Player connected: ", id)
+	
+	# Send current player list to the newly connected client
+	if multiplayer.is_server():
+		call_deferred("broadcast_player_list")
 
 func _on_peer_disconnected(id: int):
 	"""Called when a peer disconnects"""
 	print("Player disconnected: ", id)
 	remove_player_from_list(id)
 	PlayerData.remove_player(id)
+	
+	# Broadcast updated player list to all remaining clients
+	if multiplayer.is_server():
+		broadcast_player_list()
 
 @rpc("any_peer", "reliable")
 func send_player_data(display_name: String, sprite_path: String):
@@ -156,14 +167,63 @@ func send_player_data(display_name: String, sprite_path: String):
 	PlayerData.register_player(sender_id, display_name, sprite_path)
 	add_player_to_list(sender_id, display_name)
 	print("Registered player: ", display_name, " with ID: ", sender_id)
+	
+	# Broadcast updated player list to all clients
+	if multiplayer.is_server():
+		broadcast_player_list()
+
+@rpc("any_peer", "reliable")
+func request_player_list():
+	"""Request current player list from server (client to server)"""
+	if multiplayer.is_server():
+		print("📋 Client requested player list, broadcasting...")
+		broadcast_player_list()
+
+@rpc("authority", "reliable")
+func update_player_list(player_data_list: Array):
+	"""Receive updated player list from server"""
+	print("📋 Received player list update: ", player_data_list)
+	
+	# Clear current list
+	players_list.clear()
+	
+	# Add all players from the updated list
+	for player_data in player_data_list:
+		var id = player_data["id"]
+		var name = player_data["name"]
+		var is_host = (id == 1)
+		var display_name = name + (" (Host)" if is_host else "")
+		
+		players_list.add_item(display_name)
+		players_list.set_item_metadata(players_list.get_item_count() - 1, id)
+	
+	print("📋 Player list updated, total players: ", players_list.get_item_count())
+
+func broadcast_player_list():
+	"""Broadcast current player list to all clients (server only)"""
+	if not multiplayer.is_server():
+		return
+	
+	var player_data_list = []
+	var all_players = PlayerData.get_all_players()
+	
+	for peer_id in all_players:
+		var player_info = all_players[peer_id]
+		player_data_list.append({
+			"id": peer_id,
+			"name": player_info["name"]
+		})
+	
+	print("📋 Broadcasting player list to all clients: ", player_data_list)
+	update_player_list.rpc(player_data_list)
 
 func add_player_to_list(id: int, display_name: String):
-	"""Add a player to the UI list"""
+	"""Add a player to the UI list (local only)"""
 	players_list.add_item(display_name)
 	players_list.set_item_metadata(players_list.get_item_count() - 1, id)
 
 func remove_player_from_list(id: int):
-	"""Remove a player from the UI list"""
+	"""Remove a player from the UI list (local only)"""
 	for i in range(players_list.get_item_count()):
 		if players_list.get_item_metadata(i) == id:
 			players_list.remove_item(i)
