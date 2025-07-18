@@ -49,9 +49,10 @@ extends CharacterBody2D
 var decay_timer: Timer
 var decay_rate: float = 10.0
 
-# Interaction cooldowns
+# Interaction cooldowns and movement tracking
 var interaction_cooldowns: Dictionary = {}
 var last_direction = Vector2(0, 1)
+var was_moving_last_frame = false
 
 func _ready() -> void:
 	"""Initialize basic systems - player data will be loaded separately"""
@@ -113,6 +114,9 @@ func initialize_player_with_id(id: int):
 	
 	# Setup systems
 	setup_decay_timer()
+	
+	# Start with idle animation for all players (local and remote)
+	update_animation(Vector2.ZERO)
 	
 	# Only process physics for our own character
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
@@ -215,7 +219,7 @@ func load_sprite(sprite_path: String):
 
 	animated_sprite.sprite_frames = new_sprite_frames
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	"""Handle movement and synchronization"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	if is_local_player:
@@ -225,9 +229,15 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()
 		update_animation(input_vector)
 		
-		# Sync position to other players
-		if velocity.length() > 0 or input_vector.length() > 0:
+		# Track if player is currently moving
+		var is_moving_now = (velocity.length() > 0 or input_vector.length() > 0)
+		
+		# Sync position to other players when moving OR when just stopped moving
+		if is_moving_now or was_moving_last_frame:
 			sync_position.rpc(global_position, input_vector)
+		
+		# Update movement state for next frame
+		was_moving_last_frame = is_moving_now
 
 func get_input_vector() -> Vector2:
 	"""Get normalized input vector from player input"""
