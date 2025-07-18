@@ -1,12 +1,12 @@
 [gd_scene load_steps=20 format=3 uid="uid://g4fiswq8lhyj"]
 
-[ext_resource type="PackedScene" uid="uid://cwmn48r6ahadw" path="res://scenes/Player.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://bv5j0i1iwoxee" path="res://assets/Office_Design_1.png" id="2"]
 [ext_resource type="PackedScene" uid="uid://jbg8q881wx2g" path="res://scenes/Desk.tscn" id="3"]
 [ext_resource type="PackedScene" uid="uid://df6mvfutgs6a8" path="res://scenes/NPCAsh.tscn" id="4"]
 [ext_resource type="PackedScene" uid="uid://crsxowshmlq6l" path="res://scenes/NPCAusten.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://ifjfnjmh02yi" path="res://scenes/NPCRebecca.tscn" id="6"]
 [ext_resource type="PackedScene" uid="uid://bmh70wgw1byut" path="res://scenes/VendingMachine.tscn" id="7"]
+[ext_resource type="Script" uid="uid://c7kl2865r7na2" path="res://scripts/MainSceneManager.gd" id="7_nxtc6"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Top"]
 size = Vector2(346, 62)
@@ -89,9 +89,6 @@ position = Vector2(62, 192)
 shape = SubResource("RectangleShape2D_Top2")
 debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 
-[node name="Player" parent="." instance=ExtResource("1")]
-position = Vector2(22, 306)
-
 [node name="Desk" parent="." instance=ExtResource("3")]
 position = Vector2(304, 217)
 
@@ -160,3 +157,11 @@ debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(200, 200)
 zoom = Vector2(4, 4)
+
+[node name="MainSceneManager" type="Node2D" parent="."]
+script = ExtResource("7_nxtc6")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="MainSceneManager"]
+_spawnable_scenes = PackedStringArray("uid://1g8gtj3oe582")
+spawn_path = NodePath(".")
+spawn_limit = 4

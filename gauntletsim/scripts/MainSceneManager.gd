@@ -1,0 +1,131 @@
+# MainSceneManager.gd - Manages multiplayer players in the main game scene
+extends Node2D
+
+@onready var multiplayer_spawner: MultiplayerSpawner = $MultiplayerSpawner
+
+# Spawn positions for different players
+var spawn_positions = [
+	Vector2(22, 306),   # Host spawn position
+	Vector2(50, 306),   # Player 2 spawn (offset right)
+	Vector2(78, 306),   # Player 3 spawn (offset right more)
+	Vector2(106, 306)   # Player 4 spawn (offset right most)
+]
+
+func _ready():
+	"""Initialize the main scene with multiplayer support"""
+	print("MainSceneManager initializing...")
+	
+	# Setup multiplayer callbacks
+	multiplayer.peer_connected.connect(_on_peer_connected)
+	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
+	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	
+	# Check if we have an active multiplayer session
+	if multiplayer.has_multiplayer_peer() and PlayerData.get_all_players().size() > 0:
+		# Multiplayer mode
+		if multiplayer.is_server():
+			print("Server: Spawning all players...")
+			call_deferred("spawn_all_players")
+		else:
+			print("Client: Waiting for server...")
+	else:
+		# Single-player fallback mode
+		print("Single-player mode - creating fallback player")
+		call_deferred("create_fallback_host_player")
+
+func spawn_all_players():
+	"""Spawn all registered players on server and sync to all clients"""
+	var all_players = PlayerData.get_all_players()
+	print("Spawning players: ", all_players.keys())
+	
+	# CRITICAL: Broadcast player data to all clients first
+	print("Broadcasting player registry to clients...")
+	PlayerData.broadcast_player_registry()
+	
+	# Wait a moment for the broadcast to reach clients
+	await get_tree().process_frame
+	
+	# Spawn all players locally on server
+	for peer_id in all_players.keys():
+		spawn_player_local(peer_id)
+	
+	# Tell all clients to spawn the same players
+	spawn_all_players_on_clients.rpc()
+
+@rpc("authority", "call_local", "reliable")
+func spawn_all_players_on_clients():
+	"""Spawn all registered players on clients"""
+	var node_type = "server" if multiplayer.is_server() else "client"
+	print("🌍 spawn_all_players_on_clients() called on ", node_type)
+	
+	var all_players = PlayerData.get_all_players()
+	print("🌍 ", node_type, " has player data: ", all_players.keys())
+	
+	# Spawn all players
+	for peer_id in all_players.keys():
+		spawn_player_local(peer_id)
+
+func spawn_player_local(peer_id: int):
+	"""Spawn a specific player locally"""
+	var node_type = "server" if multiplayer.is_server() else "client"
+	print("🎭 spawn_player_local() called on ", node_type, " for peer ", peer_id)
+	
+	# Check if player already exists
+	var existing_player = get_node_or_null("Player_" + str(peer_id))
+	if existing_player:
+		print("🎭 Player ", peer_id, " already exists on ", node_type, ", skipping")
+		return
+	
+	# Get player data
+	var player_data = PlayerData.get_player_data(peer_id)
+	print("🎭 ", node_type, " player data for ", peer_id, ": ", player_data)
+	if player_data.is_empty() and peer_id != 1:
+		print("ERROR: No player data found for peer ", peer_id, " on ", node_type)
+		return
+	
+	# Load and configure player
+	var player_scene = preload("res://scenes/MultiplayerPlayer.tscn")
+	var player_instance = player_scene.instantiate()
+	player_instance.name = "Player_" + str(peer_id)
+	
+	# Set spawn position
+	var spawn_index = 0
+	var all_peer_ids = PlayerData.get_all_players().keys()
+	all_peer_ids.sort()
+	spawn_index = all_peer_ids.find(peer_id)
+	
+	if spawn_index >= 0 and spawn_index < spawn_positions.size():
+		player_instance.global_position = spawn_positions[spawn_index]
+	else:
+		player_instance.global_position = spawn_positions[0]
+	
+	# Add to scene and initialize
+	add_child(player_instance, true)
+	
+	# Initialize with peer_id
+	if player_instance.has_method("initialize_player_with_id"):
+		player_instance.initialize_player_with_id(peer_id)
+		print("✅ ", node_type, " spawned player ", peer_id, " at position ", player_instance.global_position)
+
+func create_fallback_host_player():
+	"""Create a fallback host player for single-player mode"""
+	print("Creating fallback host player...")
+	PlayerData.register_player(1, "Host Player", "res://assets/characters/sean_spritesheet.png")
+	await get_tree().process_frame
+	spawn_player_local(1)
+
+func _on_peer_connected(peer_id: int):
+	"""Handle new peer connection"""
+	print("Peer connected: ", peer_id)
+
+func _on_peer_disconnected(peer_id: int):
+	"""Handle peer disconnection"""
+	print("Peer disconnected: ", peer_id)
+	var player_node = get_node_or_null("Player_" + str(peer_id))
+	if player_node:
+		player_node.queue_free()
+
+func _on_server_disconnected():
+	"""Handle server disconnection"""
+	print("Server disconnected!")
+	get_tree().change_scene_to_file("res://scenes/CharacterCreation.tscn") 
