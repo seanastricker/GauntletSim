@@ -2,12 +2,15 @@
 # Handles player information storage and synchronization
 extends Node
 
-# Local player data (existing)
+# Player data for single-player compatibility
 var player_name: String
-var player_sprite_path: String 
+var player_sprite_path: String
 
 # Multiplayer player registry
 var players_data: Dictionary = {}
+
+# Signal emitted when player registry is synchronized from server
+signal player_registry_updated
 
 func register_player(peer_id: int, display_name: String, sprite_path: String):
     """Register a player's data for multiplayer synchronization"""
@@ -45,6 +48,7 @@ func sync_player_registry(registry_data: Dictionary):
     for peer_id in players_data:
         var player = players_data[peer_id]
         print("  - Player ", peer_id, ": ", player["name"])
+    player_registry_updated.emit()
 
 func broadcast_player_registry():
     """Send current player registry to all clients (server only)"""

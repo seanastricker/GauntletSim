@@ -145,6 +145,11 @@ func setup_ui():
 	print("🎮 setup_ui(): peer_id=", peer_id, " multiplayer_authority=", is_multiplayer_authority())
 	print("🎮 setup_ui(): current unique_id=", multiplayer.get_unique_id())
 	
+	# Style the name label for ALL players (local and remote)
+	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	name_label.add_theme_constant_override("outline_size", 4)
+	
 	var ui_layer = $UI
 	# Show UI only for the local player (authority should match local peer ID)
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
@@ -153,11 +158,7 @@ func setup_ui():
 	print("🎮 UI visible for peer ", peer_id, ": ", ui_layer.visible)
 	
 	if is_local_player:
-		# Add outlines to UI labels
-		name_label.add_theme_color_override("font_color", Color(1, 1, 1))
-		name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-		name_label.add_theme_constant_override("outline_size", 4)
-		
+		# Add outlines to stats UI labels (only for local player)
 		health_label.add_theme_color_override("font_color", Color(1, 1, 1))
 		health_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 		health_label.add_theme_constant_override("outline_size", 4)

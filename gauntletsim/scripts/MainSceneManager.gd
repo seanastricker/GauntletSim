@@ -11,6 +11,9 @@ var spawn_positions = [
 	Vector2(106, 306)   # Player 4 spawn (offset right most)
 ]
 
+# Track if client failed to spawn initially due to missing data
+var client_spawn_failed = false
+
 func _ready():
 	"""Initialize the main scene with multiplayer support"""
 	print("MainSceneManager initializing...")
@@ -19,6 +22,9 @@ func _ready():
 	multiplayer.peer_connected.connect(_on_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_peer_disconnected)
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
+	
+	# Connect to PlayerData signal for retry spawning
+	PlayerData.player_registry_updated.connect(_on_player_registry_updated)
 	
 	# Check if we have an active multiplayer session
 	if multiplayer.has_multiplayer_peer() and PlayerData.get_all_players().size() > 0:
@@ -42,8 +48,9 @@ func spawn_all_players():
 	print("Broadcasting player registry to clients...")
 	PlayerData.broadcast_player_registry()
 	
-	# Wait a moment for the broadcast to reach clients
-	await get_tree().process_frame
+	# Wait longer for the broadcast to reach all clients
+	await get_tree().create_timer(0.2).timeout
+	print("Player data broadcast complete, now spawning...")
 	
 	# Spawn all players locally on server
 	for peer_id in all_players.keys():
@@ -61,9 +68,33 @@ func spawn_all_players_on_clients():
 	var all_players = PlayerData.get_all_players()
 	print("🌍 ", node_type, " has player data: ", all_players.keys())
 	
+	# On client: verify we have valid player data before spawning
+	if not multiplayer.is_server():
+		if all_players.is_empty():
+			print("⚠️ Client has no player data yet, will retry when data arrives")
+			client_spawn_failed = true
+			return
+		
+		# Verify we have data for the host (Player 1)
+		var host_data = PlayerData.get_player_data(1)
+		if host_data.is_empty():
+			print("⚠️ Client missing host player data, will retry when data arrives")
+			client_spawn_failed = true
+			return
+	
 	# Spawn all players
 	for peer_id in all_players.keys():
 		spawn_player_local(peer_id)
+	
+	# Mark spawn as successful for client
+	if not multiplayer.is_server():
+		client_spawn_failed = false
+
+func _on_player_registry_updated():
+	"""Called when PlayerData registry is updated - retry spawning if it failed before"""
+	if not multiplayer.is_server() and client_spawn_failed:
+		print("🔄 Player registry updated, retrying spawn...")
+		spawn_all_players_on_clients()
 
 func spawn_player_local(peer_id: int):
 	"""Spawn a specific player locally"""
