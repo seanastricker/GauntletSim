@@ -11,7 +11,7 @@ func _input(event):
         # Now, add the social boost functionality.
         var bodies = area.get_overlapping_bodies()
         for body in bodies:
-            if body.is_in_group("player") and body.has_method("modify_social") and body.can_interact("socialize"):
+            if body.is_in_group("player") and body.has_method("modify_social"):  # Removed cooldown check for testing
                 body.modify_social(5)
-                body.start_interaction_cooldown("socialize", 20.0) # 20 second cooldown
+                # body.start_interaction_cooldown("socialize", 20.0)  # Disabled for testing
                 print("Player socialized. Social +5") 

@@ -47,12 +47,17 @@ extends CharacterBody2D
 
 # Stat decay system
 var decay_timer: Timer
-var decay_rate: float = 10.0
+var decay_rate: float = 3.0  # 3 seconds for testing (1 second when Health = 0)
 
 # Interaction cooldowns and movement tracking
 var interaction_cooldowns: Dictionary = {}
 var last_direction = Vector2(0, 1)
 var was_moving_last_frame = false
+
+# Game state tracking
+var is_eliminated: bool = false
+var game_outcome: String = ""  # "win", "lose_ccat", "lose_social", or ""
+var notification_label: Label
 
 func _ready() -> void:
 	"""Initialize basic systems - player data will be loaded separately"""
@@ -111,6 +116,7 @@ func initialize_player_with_id(id: int):
 	
 	# Setup UI - only visible for local player
 	setup_ui()
+	call_deferred("setup_notification_ui")
 	
 	# Setup systems
 	setup_decay_timer()
@@ -273,36 +279,51 @@ func sync_stats(new_health: int, new_social: int, new_ccat: int):
 # Stat modification functions with RPC synchronization
 func modify_health(amount: int) -> void:
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
-	if is_local_player:
+	if is_local_player and not is_eliminated:
+		var old_health = health
 		self.health = health + amount
 		sync_stats.rpc(health, social, ccat_score)
+		
+		# Check if health status changed (affects decay rate)
+		if (old_health == 0) != (health == 0):
+			update_decay_rate()
 
 func modify_social(amount: int) -> void:
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
-	if is_local_player:
+	if is_local_player and not is_eliminated:
 		self.social = social + amount
 		sync_stats.rpc(health, social, ccat_score)
 
 func modify_ccat_score(amount: int) -> void:
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
-	if is_local_player:
+	if is_local_player and not is_eliminated:
 		self.ccat_score = ccat_score + amount
 		sync_stats.rpc(health, social, ccat_score)
+		
+		# Check for instant lose condition after CCAT change
+		check_instant_lose_conditions()
 
 func setup_decay_timer() -> void:
 	"""Initialize the stat decay system"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	if is_local_player:
 		decay_timer = Timer.new()
-		decay_timer.wait_time = decay_rate
+		decay_timer.wait_time = get_current_decay_rate()
 		decay_timer.autostart = true
 		decay_timer.timeout.connect(_on_decay_timer_timeout)
 		add_child(decay_timer)
 
+func update_decay_rate():
+	"""Update the decay timer rate based on current health"""
+	if decay_timer and not is_eliminated:
+		var new_rate = get_current_decay_rate()
+		decay_timer.wait_time = new_rate
+		print("🕒 Decay rate updated to ", new_rate, " seconds (Health: ", health, ")")
+
 func _on_decay_timer_timeout() -> void:
 	"""Gradually decrease all stats over time"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
-	if is_local_player:
+	if is_local_player and not is_eliminated:
 		modify_health(-1)
 		modify_social(-1)
 		modify_ccat_score(-1)
@@ -364,11 +385,11 @@ func start_interaction_cooldown(interaction_type: String, cooldown_seconds: floa
 func work_at_desk() -> void:
 	"""Handle working at office desk - increases CCAT, decreases Health/Social"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
-	if is_local_player and can_interact("work"):
+	if is_local_player:  # Removed cooldown check for testing
 		modify_ccat_score(5)
 		modify_health(-2)
 		modify_social(-1)
-		start_interaction_cooldown("work", 10.0)
+		# start_interaction_cooldown("work", 10.0)  # Disabled for testing
 		print(player_name + " worked at desk. CCAT +5, Health -2, Social -1")
 
 func interact_with_social_npc():
@@ -376,4 +397,147 @@ func interact_with_social_npc():
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	if is_local_player:
 		modify_social(5)
-		print(player_name + " talked to a social NPC. Social +5") 
+		print(player_name + " talked to a social NPC. Social +5")
+
+# === WIN/LOSE SYSTEM ===
+
+func setup_notification_ui():
+	"""Create notification UI for win/lose messages"""
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	if is_local_player:
+		
+		notification_label = Label.new()
+		notification_label.name = "NotificationLabel_" + str(peer_id)
+		notification_label.text = ""
+		
+		# Use anchors for center positioning
+		notification_label.anchor_left = 0.5
+		notification_label.anchor_right = 0.5
+		notification_label.anchor_top = 0.5
+		notification_label.anchor_bottom = 0.5
+		notification_label.offset_left = -150
+		notification_label.offset_right = 150
+		notification_label.offset_top = -50
+		notification_label.offset_bottom = 50
+		
+		notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		notification_label.z_index = 200
+		notification_label.visible = false
+		
+		# Style the notification
+		notification_label.add_theme_font_size_override("font_size", 28)
+		notification_label.add_theme_color_override("font_color", Color.WHITE)
+		notification_label.add_theme_color_override("font_outline_color", Color.BLACK)
+		notification_label.add_theme_constant_override("outline_size", 4)
+		
+		# Add background
+		var notification_bg = StyleBoxFlat.new()
+		notification_bg.bg_color = Color(0.0, 0.0, 0.0, 0.8)
+		notification_bg.border_width_left = 3
+		notification_bg.border_width_right = 3
+		notification_bg.border_width_top = 3
+		notification_bg.border_width_bottom = 3
+		notification_bg.border_color = Color.WHITE
+		notification_bg.corner_radius_top_left = 15
+		notification_bg.corner_radius_top_right = 15
+		notification_bg.corner_radius_bottom_left = 15
+		notification_bg.corner_radius_bottom_right = 15
+		notification_label.add_theme_stylebox_override("normal", notification_bg)
+		
+		# Add to the scene tree at the top level for proper display
+		var scene_root = get_tree().current_scene
+		if scene_root:
+			scene_root.add_child(notification_label)
+			print("🎯 Notification UI created for local player ", peer_id)
+		else:
+			print("❌ Could not find scene root for notification UI")
+
+func check_instant_lose_conditions():
+	"""Check for conditions that cause immediate game loss"""
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	if not is_local_player or is_eliminated:
+		return
+	
+	# CCAT Score below 40 = instant elimination
+	if ccat_score < 40:
+		eliminate_player("lose_ccat", "You have been kicked out!")
+		return
+
+func eliminate_player(outcome: String, message: String):
+	"""Eliminate a player from the game"""
+	if is_eliminated:
+		return
+	
+	print("🚫 Player ", player_name, " eliminated: ", outcome)
+	is_eliminated = true
+	game_outcome = outcome
+	
+	# Show notification
+	show_notification(message, Color.RED)
+	
+	# Stop decay timer
+	if decay_timer:
+		decay_timer.stop()
+	
+	# Disable movement
+	set_physics_process(false)
+
+func evaluate_end_game_condition():
+	"""Evaluate win/lose condition when game time ends (called by MainSceneManager)"""
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("🎯 evaluate_end_game_condition called for peer ", peer_id, " (local: ", is_local_player, ", eliminated: ", is_eliminated, ")")
+	
+	if not is_local_player or is_eliminated:
+		print("🎯 Skipping evaluation - not local player or already eliminated")
+		return
+	
+	print("📊 Evaluating end-game condition for ", player_name)
+	print("📊 Final stats - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
+	
+	# Check lose condition: Social < 25
+	if social < 25:
+		game_outcome = "lose_social"
+		show_notification("You did not get a job offer", Color.RED)
+		print("❌ ", player_name, " lost: Social score too low (", social, ")")
+		return
+	
+	# Check win condition: CCAT >= 40 AND Social >= 25
+	if ccat_score >= 40 and social >= 25:
+		game_outcome = "win"
+		show_notification("You got a $200k job!", Color.GREEN)
+		print("🎉 ", player_name, " won! CCAT: ", ccat_score, " Social: ", social)
+		return
+	
+	# This shouldn't happen if instant lose worked, but just in case
+	game_outcome = "lose_ccat"
+	show_notification("You have been kicked out!", Color.RED)
+	print("❌ ", player_name, " lost: CCAT score too low (", ccat_score, ")")
+
+func show_notification(message: String, color: Color):
+	"""Display a notification message to the player"""
+	if notification_label:
+		notification_label.text = message
+		notification_label.add_theme_color_override("font_color", color)
+		notification_label.visible = true
+		
+		# Auto-hide after 5 seconds
+		var timer = Timer.new()
+		timer.wait_time = 5.0
+		timer.one_shot = true
+		timer.timeout.connect(func(): 
+			if notification_label:
+				notification_label.visible = false
+			timer.queue_free()
+		)
+		add_child(timer)
+		timer.start()
+		
+		print("💬 Showing notification: ", message)
+
+func get_current_decay_rate() -> float:
+	"""Get the current decay rate based on health"""
+	if health == 0:
+		return decay_rate / 3.0  # 3x faster decay when health is 0
+	else:
+		return decay_rate  # Normal decay rate 

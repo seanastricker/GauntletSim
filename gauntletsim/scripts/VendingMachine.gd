@@ -38,7 +38,7 @@ func _process(_delta):
         var local_player_found = false
         
         for body in bodies:
-            if body.is_in_group("player") and body.has_method("modify_health") and body.can_interact("vend"):
+            if body.is_in_group("player") and body.has_method("modify_health"):  # Removed cooldown check for testing
                 # Check if this is the local player (multiplayer-compatible)
                 var is_local_player = true
                 if body.has_method("get") and body.get("peer_id") != null:
@@ -48,7 +48,7 @@ func _process(_delta):
                 if is_local_player:
                     local_player_found = true
                     body.modify_health(5)
-                    body.start_interaction_cooldown("vend", 15.0) # 15 second cooldown
+                    # body.start_interaction_cooldown("vend", 15.0)  # Disabled for testing
                     print("Player used vending machine. Health +5")
                     break
         

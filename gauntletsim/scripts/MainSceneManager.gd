@@ -14,6 +14,16 @@ var spawn_positions = [
 # Track if client failed to spawn initially due to missing data
 var client_spawn_failed = false
 
+# Game Timer System
+const GAME_DURATION = 60.0  # 1 minute for testing (eventually 10 minutes)
+var game_time_remaining: float = GAME_DURATION
+var game_timer: Timer
+var is_game_active: bool = false
+var game_ended: bool = false
+
+# Timer UI
+var timer_label: Label
+
 func _ready():
 	"""Initialize the main scene with multiplayer support"""
 	print("MainSceneManager initializing...")
@@ -25,6 +35,10 @@ func _ready():
 	
 	# Connect to PlayerData signal for retry spawning
 	PlayerData.player_registry_updated.connect(_on_player_registry_updated)
+	
+	# Setup game timer and UI
+	setup_game_timer()
+	setup_timer_ui()
 	
 	# Check if we have an active multiplayer session
 	if multiplayer.has_multiplayer_peer() and PlayerData.get_all_players().size() > 0:
@@ -159,4 +173,150 @@ func _on_peer_disconnected(peer_id: int):
 func _on_server_disconnected():
 	"""Handle server disconnection"""
 	print("Server disconnected!")
-	get_tree().change_scene_to_file("res://scenes/CharacterCreation.tscn") 
+	get_tree().change_scene_to_file("res://scenes/CharacterCreation.tscn")
+
+# === GAME TIMER SYSTEM ===
+
+func setup_game_timer():
+	"""Initialize the game timer system"""
+	if multiplayer.is_server():
+		print("🕒 Server: Setting up game timer for ", GAME_DURATION, " seconds")
+		
+		# Create and configure timer
+		game_timer = Timer.new()
+		game_timer.wait_time = 1.0  # Update every second
+		game_timer.autostart = false
+		game_timer.timeout.connect(_on_game_timer_tick)
+		add_child(game_timer)
+		
+		# Start timer after players spawn
+		call_deferred("start_game_timer")
+	else:
+		print("🕒 Client: Waiting for timer updates from server")
+
+func setup_timer_ui():
+	"""Create timer display UI"""
+	timer_label = Label.new()
+	timer_label.name = "TimerLabel"
+	timer_label.text = format_time(GAME_DURATION)
+	timer_label.position = Vector2(10, 10)
+	timer_label.z_index = 100
+	
+	# Style the timer label
+	timer_label.add_theme_font_size_override("font_size", 24)
+	timer_label.add_theme_color_override("font_color", Color.WHITE)
+	timer_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	timer_label.add_theme_constant_override("outline_size", 3)
+	
+	add_child(timer_label)
+	print("🖥️ Timer UI created")
+
+func start_game_timer():
+	"""Start the game timer (server only)"""
+	if multiplayer.is_server() and not is_game_active and not game_ended:
+		print("🚀 Starting game timer!")
+		is_game_active = true
+		game_timer.start()
+		
+		# Notify all clients that game has started
+		game_started.rpc()
+
+@rpc("authority", "reliable")
+func game_started():
+	"""Notify clients that the game has started"""
+	is_game_active = true
+	print("🎮 Game started notification received!")
+
+func _on_game_timer_tick():
+	"""Handle timer tick (server only)"""
+	if not multiplayer.is_server() or game_ended:
+		return
+	
+	game_time_remaining -= 1.0
+	
+	# Update server's own timer display
+	update_timer_display()
+	
+	# Sync timer to all clients
+	sync_timer.rpc(game_time_remaining)
+	
+	# Check if time is up
+	if game_time_remaining <= 0.0:
+		end_game()
+
+@rpc("authority", "reliable")
+func sync_timer(time_remaining: float):
+	"""Sync timer from server to clients"""
+	game_time_remaining = time_remaining
+	update_timer_display()
+
+func update_timer_display():
+	"""Update the timer UI display"""
+	if timer_label:
+		timer_label.text = format_time(game_time_remaining)
+		
+		# Change color when time is running low
+		if game_time_remaining <= 10.0:
+			timer_label.add_theme_color_override("font_color", Color.RED)
+		elif game_time_remaining <= 30.0:
+			timer_label.add_theme_color_override("font_color", Color.YELLOW)
+		else:
+			timer_label.add_theme_color_override("font_color", Color.WHITE)
+
+func format_time(seconds: float) -> String:
+	"""Format seconds into MM:SS format"""
+	var minutes = int(seconds) / 60
+	var secs = int(seconds) % 60
+	return "%d:%02d" % [minutes, secs]
+
+func end_game():
+	"""End the game and evaluate all players"""
+	if game_ended:
+		return
+		
+	print("⏰ Game time is up! Evaluating all players...")
+	game_ended = true
+	is_game_active = false
+	
+	if multiplayer.is_server():
+		game_timer.stop()
+	
+	# Notify all clients that game has ended and trigger evaluation
+	game_ended_notification.rpc()
+	
+	# Evaluate win/lose conditions for all players (on all clients)
+	call_deferred("evaluate_all_players")
+
+@rpc("authority", "reliable")
+func game_ended_notification():
+	"""Notify clients that the game has ended"""
+	game_ended = true
+	is_game_active = false
+	print("🏁 Game ended notification received!")
+	
+	# Trigger evaluation on clients too
+	call_deferred("evaluate_all_players")
+
+func evaluate_all_players():
+	"""Evaluate win/lose conditions for all players"""
+	print("📊 Evaluating all players for win/lose conditions...")
+	
+	# Get all player nodes
+	var players = get_children().filter(func(child): return child.name.begins_with("Player_"))
+	print("📊 Found ", players.size(), " player nodes to evaluate")
+	
+	for player in players:
+		print("📊 Checking player: ", player.name)
+		if player.has_method("evaluate_end_game_condition"):
+			print("📊 Calling evaluate_end_game_condition for ", player.name)
+			player.evaluate_end_game_condition()
+		else:
+			print("❌ Player ", player.name, " does not have evaluate_end_game_condition method")
+
+func get_game_time_remaining() -> float:
+	"""Get remaining game time"""
+	return game_time_remaining
+
+func is_game_running() -> bool:
+	"""Check if game is currently active"""
+	return is_game_active and not game_ended 
