@@ -91,20 +91,52 @@ func update_animation():
 
 func _on_body_entered(body):
 	if body.is_in_group("player"):
-		player_in_range = true
-		interaction_prompt.visible = true
+		# Check if this is the local player (multiplayer-compatible)
+		var is_local_player = true
+		if body.has_method("get") and body.get("peer_id") != null:
+			# This is a MultiplayerPlayer - check if it's the local player
+			is_local_player = (body.peer_id == multiplayer.get_unique_id())
+		
+		if is_local_player:
+			player_in_range = true
+			interaction_prompt.visible = true
 
 func _on_body_exited(body):
 	if body.is_in_group("player"):
-		player_in_range = false
-		interaction_prompt.visible = false
-		dialogue_label.visible = false
-		dialogue_timer.stop()
+		# Check if this is the local player (multiplayer-compatible)
+		var is_local_player = true
+		if body.has_method("get") and body.get("peer_id") != null:
+			# This is a MultiplayerPlayer - check if it's the local player
+			is_local_player = (body.peer_id == multiplayer.get_unique_id())
+		
+		if is_local_player:
+			player_in_range = false
+			interaction_prompt.visible = false
+			dialogue_label.visible = false
+			dialogue_timer.stop()
 
 func _unhandled_input(_event):
 	if player_in_range and Input.is_action_just_pressed("interact"):
-		dialogue_label.visible = true
-		dialogue_timer.start()
+		# Check if the LOCAL player is the one near this NPC (multiplayer-compatible)
+		var overlapping_bodies = area.get_overlapping_bodies()
+		var local_player_found = false
+		
+		for body in overlapping_bodies:
+			if body.is_in_group("player"):
+				# In multiplayer, only respond if the local player is the one interacting
+				var is_local_player = true
+				if body.has_method("get") and body.get("peer_id") != null:
+					# This is a MultiplayerPlayer - check if it's the local player
+					is_local_player = (body.peer_id == multiplayer.get_unique_id())
+				
+				if is_local_player:
+					local_player_found = true
+					break
+		
+		# Only show dialogue if the LOCAL player is the one interacting
+		if local_player_found:
+			dialogue_label.visible = true
+			dialogue_timer.start()
 
 func _on_dialogue_timer_timeout():
 	dialogue_label.visible = false 
