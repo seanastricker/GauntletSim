@@ -2,6 +2,7 @@
 # Handles hosting and joining multiplayer games
 extends Control
 
+@onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var host_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/HostButton
 @onready var join_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/JoinButton
 @onready var ip_input: LineEdit = $CenterContainer/VBoxContainer/IPInput
@@ -34,7 +35,225 @@ func _ready():
 	status_label.text = "Choose Host or Join"
 	ip_input.placeholder_text = "localhost"
 	
+	# Apply modern UI styling
+	setup_modern_ui()
+	
 	print("🎮 Lobby initialization complete!")
+
+func setup_modern_ui():
+	"""Configure modern, attractive UI styling for lobby"""
+	# Define colors
+	var primary_color = Color(0.956, 0.689, 0.416, 1.0)  # #F4B06A
+	var secondary_color = Color(0.992, 0.851, 0.604, 1.0)  # #FDD89A
+	var black_border = Color(0.0, 0.0, 0.0, 1.0)
+	var black_text = Color(0.0, 0.0, 0.0, 1.0)
+	var dark_gray_text = Color(0.2, 0.2, 0.2, 0.8)
+	
+	# Get bold font
+	var bold_font = ThemeDB.fallback_font
+	
+	# Define background color for text boxes
+	var text_box_bg_color = Color(0.953, 0.690, 0.416, 1.0)  # #F3B06A
+	
+	# === TITLE LABEL STYLING ===
+	style_label(title_label, 36, black_text, bold_font, text_box_bg_color, black_border)
+	
+	# === HOST BUTTON STYLING ===
+	style_button(host_button, "Host Game", 28, primary_color, secondary_color, black_border, black_text, bold_font)
+	
+	# === JOIN BUTTON STYLING ===
+	style_button(join_button, "Join Game", 28, primary_color, secondary_color, black_border, black_text, bold_font)
+	
+	# === START GAME BUTTON STYLING ===
+	style_button(start_game_button, "Start Game", 32, primary_color, secondary_color, black_border, black_text, bold_font)
+	
+	# === IP INPUT STYLING ===
+	style_line_edit(ip_input, 28, primary_color, secondary_color, black_border, black_text, dark_gray_text, bold_font)
+	
+	# === STATUS LABEL STYLING ===
+	style_label(status_label, 28, black_text, bold_font, text_box_bg_color, black_border)
+	
+	# === PLAYERS LIST STYLING ===
+	style_item_list(players_list, 22, primary_color, secondary_color, black_border, black_text, bold_font)
+	
+	print("Modern UI styling applied to lobby!")
+
+func style_button(button: Button, text: String, font_size: int, bg_color: Color, hover_color: Color, border_color: Color, text_color: Color, font: Font):
+	"""Apply consistent button styling"""
+	button.text = text
+	button.add_theme_font_size_override("font_size", font_size)
+	button.add_theme_font_override("font", font)
+	
+	# Normal state
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = bg_color
+	normal_style.border_width_left = 3
+	normal_style.border_width_right = 3
+	normal_style.border_width_top = 3
+	normal_style.border_width_bottom = 3
+	normal_style.border_color = border_color
+	normal_style.corner_radius_top_left = 15
+	normal_style.corner_radius_top_right = 15
+	normal_style.corner_radius_bottom_left = 15
+	normal_style.corner_radius_bottom_right = 15
+	normal_style.shadow_size = 0
+	normal_style.shadow_offset = Vector2(0, 0)
+	
+	# Hover state
+	var hover_style = normal_style.duplicate()
+	hover_style.bg_color = hover_color
+	
+	# Pressed state
+	var pressed_style = normal_style.duplicate()
+	pressed_style.bg_color = Color(bg_color.r * 0.9, bg_color.g * 0.9, bg_color.b * 0.9, 1.0)
+	
+	# Focus state (no ugly outline)
+	var focus_style = normal_style.duplicate()
+	
+	# Apply styles
+	button.add_theme_stylebox_override("normal", normal_style)
+	button.add_theme_stylebox_override("hover", hover_style)
+	button.add_theme_stylebox_override("pressed", pressed_style)
+	button.add_theme_stylebox_override("focus", focus_style)
+	
+	# Font colors - ensure pure black text in ALL states including disabled
+	var pure_black = Color(0.0, 0.0, 0.0, 1.0)
+	button.add_theme_color_override("font_color", pure_black)
+	button.add_theme_color_override("font_hover_color", pure_black)
+	button.add_theme_color_override("font_pressed_color", pure_black)
+	button.add_theme_color_override("font_focus_color", pure_black)
+	button.add_theme_color_override("font_hover_pressed_color", pure_black)
+	button.add_theme_color_override("font_outline_color", Color.TRANSPARENT)
+	button.add_theme_color_override("font_disabled_color", pure_black)
+	
+	# Force remove any inherited theme colors that might override
+	button.remove_theme_color_override("font_selected_color")
+	button.remove_theme_color_override("font_unselected_color")
+	
+	# Set minimum size
+	button.custom_minimum_size = Vector2(280, 70)
+
+func style_line_edit(line_edit: LineEdit, font_size: int, bg_color: Color, hover_color: Color, border_color: Color, text_color: Color, placeholder_color: Color, font: Font):
+	"""Apply consistent LineEdit styling"""
+	line_edit.add_theme_font_size_override("font_size", font_size)
+	line_edit.add_theme_font_override("font", font)
+	
+	# Normal state
+	var normal_style = StyleBoxFlat.new()
+	normal_style.bg_color = bg_color
+	normal_style.border_width_left = 3
+	normal_style.border_width_right = 3
+	normal_style.border_width_top = 3
+	normal_style.border_width_bottom = 3
+	normal_style.border_color = border_color
+	normal_style.corner_radius_top_left = 10
+	normal_style.corner_radius_top_right = 10
+	normal_style.corner_radius_bottom_left = 10
+	normal_style.corner_radius_bottom_right = 10
+	normal_style.shadow_size = 0
+	normal_style.shadow_offset = Vector2(0, 0)
+	
+	# Hover state
+	var hover_style = normal_style.duplicate()
+	hover_style.bg_color = hover_color
+	
+	# Focus state
+	var focus_style = normal_style.duplicate()
+	
+	# Apply styles
+	line_edit.add_theme_stylebox_override("normal", normal_style)
+	line_edit.add_theme_stylebox_override("hover", hover_style)
+	line_edit.add_theme_stylebox_override("focus", focus_style)
+	line_edit.add_theme_stylebox_override("read_only", normal_style)
+	
+	# Font colors
+	line_edit.add_theme_color_override("font_color", text_color)
+	line_edit.add_theme_color_override("font_placeholder_color", placeholder_color)
+	line_edit.add_theme_color_override("caret_color", text_color)
+	line_edit.add_theme_color_override("selection_color", Color(0.4, 0.6, 1.0, 0.4))
+	
+	# Set minimum size
+	line_edit.custom_minimum_size = Vector2(400, 50)
+
+func style_label(label: Label, font_size: int, text_color: Color, font: Font, bg_color: Color = Color.TRANSPARENT, border_color: Color = Color.TRANSPARENT):
+	"""Apply consistent Label styling with optional background box"""
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_override("font", font)
+	label.add_theme_color_override("font_color", text_color)
+	
+	if bg_color != Color.TRANSPARENT:
+		# Create background box style
+		var label_bg_style = StyleBoxFlat.new()
+		label_bg_style.bg_color = bg_color
+		
+		if border_color != Color.TRANSPARENT:
+			label_bg_style.border_width_left = 3
+			label_bg_style.border_width_right = 3
+			label_bg_style.border_width_top = 3
+			label_bg_style.border_width_bottom = 3
+			label_bg_style.border_color = border_color
+		
+		label_bg_style.corner_radius_top_left = 10
+		label_bg_style.corner_radius_top_right = 10
+		label_bg_style.corner_radius_bottom_left = 10
+		label_bg_style.corner_radius_bottom_right = 10
+		label_bg_style.shadow_size = 0
+		label_bg_style.shadow_offset = Vector2(0, 0)
+		
+		# Add padding for better text appearance
+		label_bg_style.content_margin_left = 20
+		label_bg_style.content_margin_right = 20
+		label_bg_style.content_margin_top = 12
+		label_bg_style.content_margin_bottom = 12
+		
+		label.add_theme_stylebox_override("normal", label_bg_style)
+
+func style_item_list(item_list: ItemList, font_size: int, bg_color: Color, selection_color: Color, border_color: Color, text_color: Color, font: Font):
+	"""Apply consistent ItemList styling"""
+	item_list.add_theme_font_size_override("font_size", font_size)
+	item_list.add_theme_font_override("font", font)
+	
+	# Background style
+	var bg_style = StyleBoxFlat.new()
+	bg_style.bg_color = Color(bg_color.r * 0.95, bg_color.g * 0.95, bg_color.b * 0.95, 1.0)  # Slightly darker
+	bg_style.border_width_left = 3
+	bg_style.border_width_right = 3
+	bg_style.border_width_top = 3
+	bg_style.border_width_bottom = 3
+	bg_style.border_color = border_color
+	bg_style.corner_radius_top_left = 10
+	bg_style.corner_radius_top_right = 10
+	bg_style.corner_radius_bottom_left = 10
+	bg_style.corner_radius_bottom_right = 10
+	bg_style.shadow_size = 0
+	bg_style.shadow_offset = Vector2(0, 0)
+	
+	# Selected item style
+	var selected_style = StyleBoxFlat.new()
+	selected_style.bg_color = selection_color
+	selected_style.border_width_left = 1
+	selected_style.border_width_right = 1
+	selected_style.border_width_top = 1
+	selected_style.border_width_bottom = 1
+	selected_style.border_color = border_color
+	selected_style.corner_radius_top_left = 5
+	selected_style.corner_radius_top_right = 5
+	selected_style.corner_radius_bottom_left = 5
+	selected_style.corner_radius_bottom_right = 5
+	selected_style.shadow_size = 0
+	selected_style.shadow_offset = Vector2(0, 0)
+	
+	# Apply styles
+	item_list.add_theme_stylebox_override("panel", bg_style)
+	item_list.add_theme_stylebox_override("selected", selected_style)
+	item_list.add_theme_stylebox_override("selected_focus", selected_style)
+	
+	# Font colors
+	item_list.add_theme_color_override("font_color", text_color)
+	item_list.add_theme_color_override("font_selected_color", text_color)
+	
+	# Set minimum size
+	item_list.custom_minimum_size = Vector2(400, 200)
 
 func _on_host_pressed():
 	"""Start hosting a multiplayer game"""
