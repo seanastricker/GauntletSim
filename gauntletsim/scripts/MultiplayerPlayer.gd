@@ -163,7 +163,7 @@ func create_health_ui():
 	var health_container = Control.new()
 	health_container.name = "HealthContainer_Runtime"
 	health_container.layout_mode = 2
-	health_container.custom_minimum_size = Vector2(240, 35)
+	health_container.custom_minimum_size = Vector2(480, 70)  # Same size as others
 	
 	# Insert at position 0 (first)
 	vbox.add_child(health_container)
@@ -172,32 +172,27 @@ func create_health_ui():
 	# Create HealthBar
 	var health_progress_bar = ProgressBar.new()
 	health_progress_bar.name = "HealthBar"
-	health_progress_bar.layout_mode = 1
-	health_progress_bar.anchors_preset = 15
-	health_progress_bar.anchor_right = 1.0
-	health_progress_bar.anchor_bottom = 1.0
-	health_progress_bar.max_value = 50.0
-	health_progress_bar.value = 50.0
-	health_progress_bar.show_percentage = false
+	health_progress_bar.size = Vector2(480, 70)  # Same size as Social and CCAT
+	health_progress_bar.position = Vector2(0, 0)
+	health_progress_bar.min_value = 0
+	health_progress_bar.max_value = 50
+	health_progress_bar.value = health
+	health_progress_bar.show_percentage = false  # Hide percentage display
+	health_progress_bar.z_index = 2
 	health_container.add_child(health_progress_bar)
 	
-	# Create HealthLabel
+	# Create HealthLabel (positioned inside the progress bar)
 	var health_text_label = Label.new()
 	health_text_label.name = "HealthLabel"
-	health_text_label.layout_mode = 1
-	health_text_label.anchors_preset = 15
-	health_text_label.anchor_right = 1.0
-	health_text_label.anchor_bottom = 1.0
-	health_text_label.text = "Health: 50/50"
-	health_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	health_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	health_text_label.text = "Health: " + str(health) + "/50"
+	health_text_label.position = Vector2(10, 20)  # Inside the progress bar
+	health_text_label.size = Vector2(460, 30)  # Fits within bar
+	health_text_label.z_index = 10
 	health_container.add_child(health_text_label)
 	
-	# Update the variables to point to the new nodes
+	# Store references
 	health_bar = health_progress_bar
 	health_label = health_text_label
-	
-	print("✅ Health UI created programmatically!")
 
 func create_social_ui():
 	"""Create Social UI elements programmatically if missing from scene"""
@@ -210,41 +205,95 @@ func create_social_ui():
 	var social_container = Control.new()
 	social_container.name = "SocialContainer_Runtime"
 	social_container.layout_mode = 2
-	social_container.custom_minimum_size = Vector2(240, 35)
+	social_container.custom_minimum_size = Vector2(480, 70)  # Doubled from 240x35
 	
 	# Insert between Health and CCAT (position 1)
 	vbox.add_child(social_container)
 	vbox.move_child(social_container, 1)
 	
+	# Add subtle danger zone background highlight
+	var danger_zone = ColorRect.new()
+	danger_zone.name = "SocialDangerZone"
+	danger_zone.color = Color(1, 0, 0, 0.08)  # Very subtle red tint
+	danger_zone.size = Vector2(240, 70)  # From 0 to threshold (25/50 = 50% of 480px = 240px)
+	danger_zone.position = Vector2(0, 0)
+	danger_zone.z_index = 1
+	social_container.add_child(danger_zone)
+	
 	# Create SocialBar
 	var social_progress_bar = ProgressBar.new()
 	social_progress_bar.name = "SocialBar"
-	social_progress_bar.layout_mode = 1
-	social_progress_bar.anchors_preset = 15
-	social_progress_bar.anchor_right = 1.0
-	social_progress_bar.anchor_bottom = 1.0
-	social_progress_bar.max_value = 50.0
-	social_progress_bar.value = 50.0
-	social_progress_bar.show_percentage = false
+	social_progress_bar.size = Vector2(480, 70)  # Doubled from 240x35
+	social_progress_bar.position = Vector2(0, 0)
+	social_progress_bar.min_value = 0
+	social_progress_bar.max_value = 50
+	social_progress_bar.value = social
+	social_progress_bar.show_percentage = false  # Hide percentage display
+	social_progress_bar.z_index = 2
 	social_container.add_child(social_progress_bar)
 	
-	# Create SocialLabel
+	# Threshold line for Social = 25 (Simple math: 25 * 9.6px = 240px)
+	var threshold_position = 25 * (480.0 / 50.0)  # 25 * 9.6 = 240px exactly
+	
+	# Drop shadow for threshold line
+	var threshold_shadow = ColorRect.new()
+	threshold_shadow.name = "SocialThresholdShadow"
+	threshold_shadow.color = Color(0, 0, 0, 0.4)  # Dark shadow
+	threshold_shadow.size = Vector2(6, 74)  # Slightly larger for shadow effect
+	threshold_shadow.position = Vector2(threshold_position + 1, -2)  # Offset for shadow
+	threshold_shadow.z_index = 3
+	social_container.add_child(threshold_shadow)
+	
+	# Main threshold line
+	var threshold_line = ColorRect.new()
+	threshold_line.name = "SocialThresholdLine"
+	threshold_line.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	threshold_line.size = Vector2(6, 70)  # Match bar height exactly
+	threshold_line.position = Vector2(threshold_position, 0)  # Exactly at Social = 25
+	threshold_line.z_index = 10
+	social_container.add_child(threshold_line)
+	
+	# Threshold notch markers (centered on the line)
+	var top_notch = ColorRect.new()
+	top_notch.name = "SocialTopNotch"
+	top_notch.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	top_notch.size = Vector2(16, 6)  # Doubled from 8x3
+	top_notch.position = Vector2(threshold_position - 5, -8)  # Centered above line
+	top_notch.z_index = 10
+	social_container.add_child(top_notch)
+	
+	var bottom_notch = ColorRect.new()
+	bottom_notch.name = "SocialBottomNotch"
+	bottom_notch.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	bottom_notch.size = Vector2(16, 6)  # Doubled from 8x3
+	bottom_notch.position = Vector2(threshold_position - 5, 72)  # Centered below line
+	bottom_notch.z_index = 10
+	social_container.add_child(bottom_notch)
+	
+	# Threshold label
+	var threshold_label = Label.new()
+	threshold_label.name = "SocialThresholdLabel"
+	threshold_label.text = "25"
+	threshold_label.add_theme_font_size_override("font_size", 16)
+	threshold_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2, 1))
+	threshold_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	threshold_label.add_theme_constant_override("outline_size", 2)
+	threshold_label.position = Vector2(threshold_position - 8, 78)  # Centered below notch
+	threshold_label.z_index = 10
+	social_container.add_child(threshold_label)
+	
+	# Create SocialLabel (positioned inside the progress bar)
 	var social_text_label = Label.new()
 	social_text_label.name = "SocialLabel"
-	social_text_label.layout_mode = 1
-	social_text_label.anchors_preset = 15
-	social_text_label.anchor_right = 1.0
-	social_text_label.anchor_bottom = 1.0
-	social_text_label.text = "Social: 50/50"
-	social_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	social_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	social_text_label.text = "Social: " + str(social) + "/50"
+	social_text_label.position = Vector2(10, 20)  # Inside the progress bar
+	social_text_label.size = Vector2(460, 30)  # Fits within bar
+	social_text_label.z_index = 10
 	social_container.add_child(social_text_label)
 	
-	# Update the @onready variables to point to the new nodes
+	# Store references
 	social_bar = social_progress_bar
 	social_label = social_text_label
-	
-	print("✅ Social UI created programmatically!")
 
 func create_ccat_ui():
 	"""Create CCAT UI elements programmatically if missing from scene"""
@@ -257,50 +306,105 @@ func create_ccat_ui():
 	var ccat_container = Control.new()
 	ccat_container.name = "CCATContainer_Runtime"
 	ccat_container.layout_mode = 2
-	ccat_container.custom_minimum_size = Vector2(240, 35)
+	ccat_container.custom_minimum_size = Vector2(480, 70)  # Doubled from 240x35
 	
-	# Insert after Social (position 2)
+	# Insert at position 2 (after Health and Social)
 	vbox.add_child(ccat_container)
 	vbox.move_child(ccat_container, 2)
+	
+	# Add subtle danger zone background highlight
+	var danger_zone = ColorRect.new()
+	danger_zone.name = "CCATDangerZone"
+	danger_zone.color = Color(1, 0, 0, 0.08)  # Very subtle red tint
+	danger_zone.size = Vector2(384, 70)  # From 0 to threshold (40/50 = 80% of 480px = 384px)
+	danger_zone.position = Vector2(0, 0)
+	danger_zone.z_index = 1
+	ccat_container.add_child(danger_zone)
 	
 	# Create CCATBar
 	var ccat_progress_bar = ProgressBar.new()
 	ccat_progress_bar.name = "CCATBar"
-	ccat_progress_bar.layout_mode = 1
-	ccat_progress_bar.anchors_preset = 15
-	ccat_progress_bar.anchor_right = 1.0
-	ccat_progress_bar.anchor_bottom = 1.0
-	ccat_progress_bar.max_value = 50.0
-	ccat_progress_bar.value = 50.0
-	ccat_progress_bar.show_percentage = false
+	ccat_progress_bar.size = Vector2(480, 70)  # Doubled from 240x35
+	ccat_progress_bar.position = Vector2(0, 0)
+	ccat_progress_bar.min_value = 0
+	ccat_progress_bar.max_value = 50
+	ccat_progress_bar.value = ccat_score
+	ccat_progress_bar.show_percentage = false  # Hide percentage display
+	ccat_progress_bar.z_index = 2
 	ccat_container.add_child(ccat_progress_bar)
 	
-	# Create CCATLabel
+	# Threshold line for CCAT = 40 (Simple math: 40 * 9.6px = 384px)
+	var threshold_position = 40 * (480.0 / 50.0)  # 40 * 9.6 = 384px exactly
+	
+	# Drop shadow for threshold line
+	var threshold_shadow = ColorRect.new()
+	threshold_shadow.name = "CCATThresholdShadow"
+	threshold_shadow.color = Color(0, 0, 0, 0.4)  # Dark shadow
+	threshold_shadow.size = Vector2(6, 74)  # Slightly larger for shadow effect
+	threshold_shadow.position = Vector2(threshold_position + 1, -2)  # Offset for shadow
+	threshold_shadow.z_index = 3
+	ccat_container.add_child(threshold_shadow)
+	
+	# Main threshold line
+	var threshold_line = ColorRect.new()
+	threshold_line.name = "CCATThresholdLine"
+	threshold_line.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	threshold_line.size = Vector2(6, 70)  # Match bar height exactly
+	threshold_line.position = Vector2(threshold_position, 0)  # Exactly at CCAT = 40
+	threshold_line.z_index = 10
+	ccat_container.add_child(threshold_line)
+	
+	# Threshold notch markers (centered on the line)
+	var top_notch = ColorRect.new()
+	top_notch.name = "CCATTopNotch"
+	top_notch.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	top_notch.size = Vector2(16, 6)  # Doubled from 8x3
+	top_notch.position = Vector2(threshold_position - 5, -8)  # Centered above line
+	top_notch.z_index = 10
+	ccat_container.add_child(top_notch)
+	
+	var bottom_notch = ColorRect.new()
+	bottom_notch.name = "CCATBottomNotch"
+	bottom_notch.color = Color(1, 0.8, 0.2, 0.9)  # Golden yellow
+	bottom_notch.size = Vector2(16, 6)  # Doubled from 8x3
+	bottom_notch.position = Vector2(threshold_position - 5, 72)  # Centered below line
+	bottom_notch.z_index = 10
+	ccat_container.add_child(bottom_notch)
+	
+	# Threshold label
+	var threshold_label = Label.new()
+	threshold_label.name = "CCATThresholdLabel"
+	threshold_label.text = "40"
+	threshold_label.add_theme_font_size_override("font_size", 16)
+	threshold_label.add_theme_color_override("font_color", Color(1, 0.8, 0.2, 1))
+	threshold_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	threshold_label.add_theme_constant_override("outline_size", 2)
+	threshold_label.position = Vector2(threshold_position - 8, 78)  # Centered below notch
+	threshold_label.z_index = 10
+	ccat_container.add_child(threshold_label)
+	
+	# Create CCATLabel (positioned inside the progress bar)
 	var ccat_text_label = Label.new()
 	ccat_text_label.name = "CCATLabel"
-	ccat_text_label.layout_mode = 1
-	ccat_text_label.anchors_preset = 15
-	ccat_text_label.anchor_right = 1.0
-	ccat_text_label.anchor_bottom = 1.0
-	ccat_text_label.text = "CCAT: 50/50"
-	ccat_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	ccat_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	ccat_text_label.text = "CCAT: " + str(ccat_score) + "/50"
+	ccat_text_label.position = Vector2(10, 20)  # Inside the progress bar
+	ccat_text_label.size = Vector2(460, 30)  # Fits within bar
+	ccat_text_label.z_index = 10
 	ccat_container.add_child(ccat_text_label)
 	
-	# Update the variables to point to the new nodes
+	# Store references
 	ccat_bar = ccat_progress_bar
 	ccat_label = ccat_text_label
-	
-	print("✅ CCAT UI created programmatically!")
 
 func style_ui_elements():
 	"""Apply styling to UI elements programmatically"""
-	# Style all stat labels
+	# Style all stat labels with larger fonts for the bigger UI
 	for label in [health_label, social_label, ccat_label]:
 		if label:
+			label.add_theme_font_size_override("font_size", 24)  # Increased from default for better visibility
 			label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
 			label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-			label.add_theme_constant_override("outline_size", 2)
+			label.add_theme_constant_override("outline_size", 3)  # Slightly thicker outline for larger text
 
 func verify_ui_paths():
 	"""Verify that all UI node paths are working correctly"""
@@ -319,6 +423,9 @@ func setup_ui():
 	print("🎮 setup_ui(): peer_id=", peer_id, " multiplayer_authority=", is_multiplayer_authority())
 	print("🎮 setup_ui(): current unique_id=", multiplayer.get_unique_id())
 	print("🎮 setup_ui(): player_name=", player_name)
+	
+	# Resize UI containers to accommodate larger progress bars
+	resize_ui_containers()
 	
 	# Always create all UI programmatically for consistency
 	print("🔧 Creating Health, Social, and CCAT UI elements...")
@@ -359,6 +466,29 @@ func setup_ui():
 	else:
 		# Dim non-local players slightly for visual distinction
 		modulate = Color(0.9, 0.9, 0.9, 1.0)
+
+func resize_ui_containers():
+	"""Resize the UI containers to accommodate larger progress bars"""
+	var stats_display = get_node_or_null("UI/StatsDisplay")
+	if stats_display:
+		# Calculate required height: 3 bars (70px each) + spacing (5px each) + notch margins (12px total) + padding
+		var required_height = (70 * 3) + (5 * 2) + 12 + 20  # = 252px total
+		var required_width = 480 + 40  # Progress bar width + padding = 520px
+		
+		# Update the StatsDisplay container size
+		stats_display.offset_top = -required_height - 10  # Move up to accommodate larger size
+		stats_display.offset_right = required_width + 10
+		
+		print("📏 Resized StatsDisplay container to accommodate 2x larger progress bars")
+		print("📏 New height: ", required_height, "px, New width: ", required_width, "px")
+	else:
+		print("❌ Could not find StatsDisplay container to resize")
+	
+	# Also ensure VBoxContainer has proper spacing for the larger elements
+	var vbox = get_node_or_null("UI/StatsDisplay/VBoxContainer")
+	if vbox:
+		vbox.add_theme_constant_override("separation", 8)  # Increase spacing between bars
+		print("📏 Updated VBoxContainer separation for larger elements")
 
 func load_sprite(sprite_path: String):
 	"""Load and configure player sprite animations"""
@@ -542,37 +672,22 @@ func update_ui() -> void:
 	if health_label and health_bar:
 		health_label.text = "Health: " + str(health) + "/50"
 		health_bar.value = health
-		# Color coding for health bar
-		if health <= 10:
-			health_bar.modulate = Color.RED
-		elif health <= 25:
-			health_bar.modulate = Color.ORANGE
-		else:
-			health_bar.modulate = Color.GREEN
+		# Fixed color: Always green for health
+		health_bar.modulate = Color.GREEN
 	
 	# Update Social
 	if social_label and social_bar:
 		social_label.text = "Social: " + str(social) + "/50"
 		social_bar.value = social
-		# Color coding for social bar (25 is critical threshold)
-		if social < 25:
-			social_bar.modulate = Color.RED
-		elif social <= 35:
-			social_bar.modulate = Color.ORANGE
-		else:
-			social_bar.modulate = Color.BLUE
+		# Fixed color: Always blue for social
+		social_bar.modulate = Color.BLUE
 	
 	# Update CCAT
 	if ccat_label and ccat_bar:
 		ccat_label.text = "CCAT: " + str(ccat_score) + "/50"
 		ccat_bar.value = ccat_score
-		# Color coding for CCAT bar (40 is critical threshold)
-		if ccat_score < 40:
-			ccat_bar.modulate = Color.RED
-		elif ccat_score <= 45:
-			ccat_bar.modulate = Color.ORANGE
-		else:
-			ccat_bar.modulate = Color.PURPLE
+		# Fixed color: Always red for CCAT score
+		ccat_bar.modulate = Color.RED
 
 # Interaction functions
 func can_interact(interaction_type: String) -> bool:
