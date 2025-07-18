@@ -8,9 +8,11 @@ extends Control
 @onready var next_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/NextButton
 
 var character_sprites = [
+	"res://assets/characters/default.png",
 	"res://assets/characters/sean_spritesheet.png",
 	"res://assets/characters/matt.png",
 	"res://assets/characters/radin.png",
+	"res://assets/characters/darren.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_01.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_02.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_03.png",
