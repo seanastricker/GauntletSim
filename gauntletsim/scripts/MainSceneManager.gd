@@ -195,21 +195,80 @@ func setup_game_timer():
 		print("🕒 Client: Waiting for timer updates from server")
 
 func setup_timer_ui():
-	"""Create timer display UI"""
+	"""Create timer display UI with proper anchoring and container box"""
+	# Create a CanvasLayer for UI that stays on screen
+	var timer_canvas = CanvasLayer.new()
+	timer_canvas.name = "TimerCanvas"
+	add_child(timer_canvas)
+	
+	# Create the main timer container (anchored to top-left) - MUCH LARGER
+	var timer_container = Control.new()
+	timer_container.name = "TimerContainer"
+	timer_container.layout_mode = 3
+	timer_container.anchors_preset = 0  # Top-left preset
+	timer_container.anchor_left = 0.0
+	timer_container.anchor_right = 0.0
+	timer_container.anchor_top = 0.0
+	timer_container.anchor_bottom = 0.0
+	timer_container.offset_left = 15.0    # 15px from left edge
+	timer_container.offset_top = 15.0     # 15px from top edge
+	timer_container.offset_right = 265.0  # 250px wide container (much larger)
+	timer_container.offset_bottom = 95.0  # 80px tall container (much larger)
+	timer_container.z_index = 100
+	timer_canvas.add_child(timer_container)
+	
+	# Create background box for the timer - MUCH LARGER
+	var timer_background = ColorRect.new()
+	timer_background.name = "TimerBackground"
+	timer_background.color = Color(0.0, 0.0, 0.0, 0.8)  # Slightly more opaque for better visibility
+	timer_background.size = Vector2(250, 80)  # Much larger background
+	timer_background.position = Vector2(0, 0)
+	timer_background.z_index = 1
+	timer_container.add_child(timer_background)
+	
+	# Add border/frame effect - MUCH LARGER
+	var timer_border = ColorRect.new()
+	timer_border.name = "TimerBorder"
+	timer_border.color = Color.TRANSPARENT  # Transparent fill
+	timer_border.size = Vector2(250, 80)  # Much larger border
+	timer_border.position = Vector2(0, 0)
+	timer_border.z_index = 2
+	
+	# Create border using StyleBoxFlat with thicker borders
+	var border_style = StyleBoxFlat.new()
+	border_style.bg_color = Color.TRANSPARENT
+	border_style.border_width_left = 4    # Thicker borders for larger container
+	border_style.border_width_right = 4
+	border_style.border_width_top = 4
+	border_style.border_width_bottom = 4
+	border_style.border_color = Color.WHITE
+	border_style.corner_radius_top_left = 12    # Larger corner radius
+	border_style.corner_radius_top_right = 12
+	border_style.corner_radius_bottom_left = 12
+	border_style.corner_radius_bottom_right = 12
+	
+	# Apply border style to background
+	timer_background.add_theme_stylebox_override("normal", border_style)
+	timer_container.add_child(timer_border)
+	
+	# Create the timer label (centered in container) - MUCH LARGER
 	timer_label = Label.new()
 	timer_label.name = "TimerLabel"
 	timer_label.text = format_time(GAME_DURATION)
-	timer_label.position = Vector2(10, 10)
-	timer_label.z_index = 100
+	timer_label.size = Vector2(250, 80)  # Much larger label area
+	timer_label.position = Vector2(0, 0)
+	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	timer_label.z_index = 10
 	
-	# Style the timer label
-	timer_label.add_theme_font_size_override("font_size", 24)
+	# Style the timer label with MUCH LARGER font
+	timer_label.add_theme_font_size_override("font_size", 48)  # Much larger font (was 28)
 	timer_label.add_theme_color_override("font_color", Color.WHITE)
 	timer_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	timer_label.add_theme_constant_override("outline_size", 3)
+	timer_label.add_theme_constant_override("outline_size", 4)  # Thicker outline for larger text
 	
-	add_child(timer_label)
-	print("🖥️ Timer UI created")
+	timer_container.add_child(timer_label)
+	print("🖥️ Timer UI created with LARGE size for maximum visibility")
 
 func start_game_timer():
 	"""Start the game timer (server only)"""
