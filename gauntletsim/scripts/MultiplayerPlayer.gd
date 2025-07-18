@@ -39,9 +39,13 @@ extends CharacterBody2D
 		print("🔧 ⚠️  SETTER COMPLETE! Peer ID set successfully!")
 
 # UI references
-@onready var health_label: Label = $UI/StatsDisplay/HealthLabel
-@onready var social_label: Label = $UI/StatsDisplay/SocialLabel
-@onready var ccat_label: Label = $UI/StatsDisplay/CCATLabel
+# All UI elements - created programmatically for consistency
+var health_label: Label = null
+var health_bar: ProgressBar = null
+var social_label: Label = null
+var social_bar: ProgressBar = null
+var ccat_label: Label = null
+var ccat_bar: ProgressBar = null
 @onready var name_label: Label = $NameLabel
 @onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -99,20 +103,18 @@ func initialize_player_with_id(id: int):
 	print("🎮 Retrieved player_data for peer ", peer_id, ": ", player_data)
 	
 	if player_data.is_empty():
-		print("🎮 No player data found, using fallback (PlayerData globals)")
+		print("🎮 Using fallback PlayerData: name='", PlayerData.player_name, "'")
 		# Fallback for host or single player
 		player_name = PlayerData.player_name
 		load_sprite(PlayerData.player_sprite_path)
-		print("🎮 Fallback: name=", player_name, " sprite=", PlayerData.player_sprite_path)
 	else:
-		print("🎮 Using player_data from registry")
+		print("🎮 Using registry data: name='", player_data["name"], "'")
 		player_name = player_data["name"]
 		load_sprite(player_data["sprite_path"])
 		health = player_data["health"]
 		social = player_data["social"]
 		ccat_score = player_data["ccat_score"]
 		global_position = player_data["position"]
-		print("🎮 Loaded: name=", player_name, " sprite=", player_data["sprite_path"])
 	
 	# Setup UI - only visible for local player
 	setup_ui()
@@ -150,15 +152,197 @@ func set_peer_id_and_authority(id: int):
 	else:
 		print("🔧 ❌ Node not in tree!")
 
+func create_health_ui():
+	"""Create Health UI elements programmatically"""
+	var vbox = get_node_or_null("UI/StatsDisplay/VBoxContainer")
+	if not vbox:
+		print("❌ VBoxContainer not found, cannot create Health UI")
+		return
+	
+	# Create HealthContainer
+	var health_container = Control.new()
+	health_container.name = "HealthContainer_Runtime"
+	health_container.layout_mode = 2
+	health_container.custom_minimum_size = Vector2(240, 35)
+	
+	# Insert at position 0 (first)
+	vbox.add_child(health_container)
+	vbox.move_child(health_container, 0)
+	
+	# Create HealthBar
+	var health_progress_bar = ProgressBar.new()
+	health_progress_bar.name = "HealthBar"
+	health_progress_bar.layout_mode = 1
+	health_progress_bar.anchors_preset = 15
+	health_progress_bar.anchor_right = 1.0
+	health_progress_bar.anchor_bottom = 1.0
+	health_progress_bar.max_value = 50.0
+	health_progress_bar.value = 50.0
+	health_progress_bar.show_percentage = false
+	health_container.add_child(health_progress_bar)
+	
+	# Create HealthLabel
+	var health_text_label = Label.new()
+	health_text_label.name = "HealthLabel"
+	health_text_label.layout_mode = 1
+	health_text_label.anchors_preset = 15
+	health_text_label.anchor_right = 1.0
+	health_text_label.anchor_bottom = 1.0
+	health_text_label.text = "Health: 50/50"
+	health_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	health_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	health_container.add_child(health_text_label)
+	
+	# Update the variables to point to the new nodes
+	health_bar = health_progress_bar
+	health_label = health_text_label
+	
+	print("✅ Health UI created programmatically!")
+
+func create_social_ui():
+	"""Create Social UI elements programmatically if missing from scene"""
+	var vbox = get_node_or_null("UI/StatsDisplay/VBoxContainer")
+	if not vbox:
+		print("❌ VBoxContainer not found, cannot create Social UI")
+		return
+	
+	# Create SocialContainer
+	var social_container = Control.new()
+	social_container.name = "SocialContainer_Runtime"
+	social_container.layout_mode = 2
+	social_container.custom_minimum_size = Vector2(240, 35)
+	
+	# Insert between Health and CCAT (position 1)
+	vbox.add_child(social_container)
+	vbox.move_child(social_container, 1)
+	
+	# Create SocialBar
+	var social_progress_bar = ProgressBar.new()
+	social_progress_bar.name = "SocialBar"
+	social_progress_bar.layout_mode = 1
+	social_progress_bar.anchors_preset = 15
+	social_progress_bar.anchor_right = 1.0
+	social_progress_bar.anchor_bottom = 1.0
+	social_progress_bar.max_value = 50.0
+	social_progress_bar.value = 50.0
+	social_progress_bar.show_percentage = false
+	social_container.add_child(social_progress_bar)
+	
+	# Create SocialLabel
+	var social_text_label = Label.new()
+	social_text_label.name = "SocialLabel"
+	social_text_label.layout_mode = 1
+	social_text_label.anchors_preset = 15
+	social_text_label.anchor_right = 1.0
+	social_text_label.anchor_bottom = 1.0
+	social_text_label.text = "Social: 50/50"
+	social_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	social_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	social_container.add_child(social_text_label)
+	
+	# Update the @onready variables to point to the new nodes
+	social_bar = social_progress_bar
+	social_label = social_text_label
+	
+	print("✅ Social UI created programmatically!")
+
+func create_ccat_ui():
+	"""Create CCAT UI elements programmatically if missing from scene"""
+	var vbox = get_node_or_null("UI/StatsDisplay/VBoxContainer")
+	if not vbox:
+		print("❌ VBoxContainer not found, cannot create CCAT UI")
+		return
+	
+	# Create CCATContainer
+	var ccat_container = Control.new()
+	ccat_container.name = "CCATContainer_Runtime"
+	ccat_container.layout_mode = 2
+	ccat_container.custom_minimum_size = Vector2(240, 35)
+	
+	# Insert after Social (position 2)
+	vbox.add_child(ccat_container)
+	vbox.move_child(ccat_container, 2)
+	
+	# Create CCATBar
+	var ccat_progress_bar = ProgressBar.new()
+	ccat_progress_bar.name = "CCATBar"
+	ccat_progress_bar.layout_mode = 1
+	ccat_progress_bar.anchors_preset = 15
+	ccat_progress_bar.anchor_right = 1.0
+	ccat_progress_bar.anchor_bottom = 1.0
+	ccat_progress_bar.max_value = 50.0
+	ccat_progress_bar.value = 50.0
+	ccat_progress_bar.show_percentage = false
+	ccat_container.add_child(ccat_progress_bar)
+	
+	# Create CCATLabel
+	var ccat_text_label = Label.new()
+	ccat_text_label.name = "CCATLabel"
+	ccat_text_label.layout_mode = 1
+	ccat_text_label.anchors_preset = 15
+	ccat_text_label.anchor_right = 1.0
+	ccat_text_label.anchor_bottom = 1.0
+	ccat_text_label.text = "CCAT: 50/50"
+	ccat_text_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ccat_text_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	ccat_container.add_child(ccat_text_label)
+	
+	# Update the variables to point to the new nodes
+	ccat_bar = ccat_progress_bar
+	ccat_label = ccat_text_label
+	
+	print("✅ CCAT UI created programmatically!")
+
+func style_ui_elements():
+	"""Apply styling to UI elements programmatically"""
+	# Style all stat labels
+	for label in [health_label, social_label, ccat_label]:
+		if label:
+			label.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+			label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+			label.add_theme_constant_override("outline_size", 2)
+
+func verify_ui_paths():
+	"""Verify that all UI node paths are working correctly"""
+	print("🔍 Verifying UI paths...")
+	var ui_layer = get_node_or_null("UI")
+	print("🔍 UI layer: ", ui_layer != null)
+	var stats_display = get_node_or_null("UI/StatsDisplay")
+	print("🔍 StatsDisplay: ", stats_display != null)
+	var vbox = get_node_or_null("UI/StatsDisplay/VBoxContainer")
+	print("🔍 VBoxContainer: ", vbox != null)
+	var health_container = get_node_or_null("UI/StatsDisplay/VBoxContainer/HealthContainer")
+	print("🔍 HealthContainer: ", health_container != null)
+
 func setup_ui():
 	"""Configure UI visibility and styling"""
 	print("🎮 setup_ui(): peer_id=", peer_id, " multiplayer_authority=", is_multiplayer_authority())
 	print("🎮 setup_ui(): current unique_id=", multiplayer.get_unique_id())
+	print("🎮 setup_ui(): player_name=", player_name)
 	
-	# Style the name label for ALL players (local and remote)
-	name_label.add_theme_color_override("font_color", Color(1, 1, 1))
-	name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	name_label.add_theme_constant_override("outline_size", 4)
+	# Always create all UI programmatically for consistency
+	print("🔧 Creating Health, Social, and CCAT UI elements...")
+	create_health_ui()
+	create_social_ui()
+	create_ccat_ui()
+	
+	# Style and update the name label for ALL players (local and remote)
+	if name_label:
+		name_label.text = player_name
+		name_label.add_theme_color_override("font_color", Color(1, 1, 1))
+		name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+		name_label.add_theme_constant_override("outline_size", 4)
+		print("✅ Name label updated to: '", name_label.text, "'")
+	else:
+		print("❌ Name label is null! Checking node path...")
+		var name_node = get_node_or_null("NameLabel")
+		if name_node:
+			print("⚠️ Found NameLabel node manually, updating @onready reference")
+			name_label = name_node
+			name_label.text = player_name
+			print("✅ Name fixed: '", name_label.text, "'")
+		else:
+			print("❌ NameLabel node not found in scene tree!")
 	
 	var ui_layer = $UI
 	# Show UI only for the local player (authority should match local peer ID)
@@ -168,19 +352,9 @@ func setup_ui():
 	print("🎮 UI visible for peer ", peer_id, ": ", ui_layer.visible)
 	
 	if is_local_player:
-		# Add outlines to stats UI labels (only for local player)
-		health_label.add_theme_color_override("font_color", Color(1, 1, 1))
-		health_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-		health_label.add_theme_constant_override("outline_size", 4)
-		
-		social_label.add_theme_color_override("font_color", Color(1, 1, 1))
-		social_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-		social_label.add_theme_constant_override("outline_size", 4)
-		
-		ccat_label.add_theme_color_override("font_color", Color(1, 1, 1))
-		ccat_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-		ccat_label.add_theme_constant_override("outline_size", 4)
-		
+		# Apply styling to UI elements after creation
+		style_ui_elements()
+		# Update UI with initial values
 		update_ui()
 	else:
 		# Dim non-local players slightly for visual distinction
@@ -363,13 +537,42 @@ func update_animation(input_vector: Vector2) -> void:
 		animated_sprite.play(new_animation)
 
 func update_ui() -> void:
-	"""Update the stats display UI"""
-	if health_label:
-		health_label.text = "Health: " + str(health)
-	if social_label:
-		social_label.text = "Social: " + str(social)
-	if ccat_label:
-		ccat_label.text = "CCAT Score: " + str(ccat_score)
+	"""Update the stats display UI with progress bars and text"""
+	# Update Health
+	if health_label and health_bar:
+		health_label.text = "Health: " + str(health) + "/50"
+		health_bar.value = health
+		# Color coding for health bar
+		if health <= 10:
+			health_bar.modulate = Color.RED
+		elif health <= 25:
+			health_bar.modulate = Color.ORANGE
+		else:
+			health_bar.modulate = Color.GREEN
+	
+	# Update Social
+	if social_label and social_bar:
+		social_label.text = "Social: " + str(social) + "/50"
+		social_bar.value = social
+		# Color coding for social bar (25 is critical threshold)
+		if social < 25:
+			social_bar.modulate = Color.RED
+		elif social <= 35:
+			social_bar.modulate = Color.ORANGE
+		else:
+			social_bar.modulate = Color.BLUE
+	
+	# Update CCAT
+	if ccat_label and ccat_bar:
+		ccat_label.text = "CCAT: " + str(ccat_score) + "/50"
+		ccat_bar.value = ccat_score
+		# Color coding for CCAT bar (40 is critical threshold)
+		if ccat_score < 40:
+			ccat_bar.modulate = Color.RED
+		elif ccat_score <= 45:
+			ccat_bar.modulate = Color.ORANGE
+		else:
+			ccat_bar.modulate = Color.PURPLE
 
 # Interaction functions
 func can_interact(interaction_type: String) -> bool:

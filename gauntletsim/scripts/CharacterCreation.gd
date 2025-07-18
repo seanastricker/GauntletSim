@@ -303,6 +303,8 @@ func _on_start_button_pressed():
 	if player_name.is_empty():
 		player_name = "Player"
 	
+	print("🏗️ Character created: '", player_name, "'")
+	
 	# Add satisfying button press animation
 	animate_start_button_press()
 	

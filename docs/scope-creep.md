@@ -20,3 +20,6 @@
 
 ## Levels of Winning
 - if you have higher social/CCAT score, your job offer is more than $200k (based on some scale)
+
+## End of Game
+- link to Cohort 3 application

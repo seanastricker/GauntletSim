@@ -422,25 +422,7 @@ offset_bottom = -20.0
 grow_vertical = 0
 scale = Vector2(2, 2)
 
-[node name="HealthLabel" type="Label" parent="UI/StatsDisplay"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "Health: 50"
 
-[node name="SocialLabel" type="Label" parent="UI/StatsDisplay"]
-layout_mode = 0
-offset_top = 30.0
-offset_right = 40.0
-offset_bottom = 53.0
-text = "Social: 50"
-
-[node name="CCATLabel" type="Label" parent="UI/StatsDisplay"]
-layout_mode = 0
-offset_top = 60.0
-offset_right = 40.0
-offset_bottom = 83.0
-text = "CCAT: 50"
 
 [node name="NameLabel" type="Label" parent="."]
 offset_left = -22.0
