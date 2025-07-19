@@ -39,3 +39,6 @@
 ## GameEndWindow UI
 - include all players in this from the start and have it set to "currently active" or something and update to "Kicked out" if they get kicked out
 - include total number of players and reduce count when people are kicked out (pile of bones reference?)
+
+## Report Bug Feature
+- look at portal.gauntlet
