@@ -22,9 +22,6 @@
 ## Levels of Winning
 - if you have higher social/CCAT score, your job offer is more than $200k (based on some scale)
 
-## End of Game
-- link to Cohort 3 application
-
 ## Player appearance
 - removing smoothing effect for better graphics
 
@@ -34,3 +31,7 @@
 
 ## Music
 - different music for different places
+
+## GameEndWindow UI
+- include all players in this from the start and have it set to "currently active" or something and update to "Kicked out" if they get kicked out
+- include total number of players and reduce count when people are kicked out (pile of bones reference?)

@@ -130,7 +130,7 @@ func _add_placeholder_message():
 	placeholder_label.text = "No eliminations yet..."
 	placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	placeholder_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8, 1.0))  # Light gray
-	placeholder_label.add_theme_font_size_override("font_size", 12)
+	placeholder_label.add_theme_font_size_override("font_size", 24)
 	players_container.add_child(placeholder_label)
 
 func _clear_placeholder_message():
@@ -190,7 +190,7 @@ func _create_player_entry(player_name: String, outcome: String, time_lasted: flo
 	var name_label = Label.new()
 	name_label.text = player_name
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.add_theme_font_size_override("font_size", 14)
+	name_label.add_theme_font_size_override("font_size", 22)
 	entry_container.add_child(name_label)
 	
 	# Result label with color coding
@@ -198,7 +198,7 @@ func _create_player_entry(player_name: String, outcome: String, time_lasted: flo
 	var result_text = _get_result_text(outcome)
 	result_label.text = result_text
 	result_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	result_label.add_theme_font_size_override("font_size", 14)
+	result_label.add_theme_font_size_override("font_size", 22)
 	
 	# Color code the result
 	match outcome:
@@ -218,7 +218,7 @@ func _create_player_entry(player_name: String, outcome: String, time_lasted: flo
 	time_label.text = _format_time(time_lasted)
 	time_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	time_label.add_theme_font_size_override("font_size", 14)
+	time_label.add_theme_font_size_override("font_size", 22)
 	entry_container.add_child(time_label)
 	
 	# Add to container

@@ -318,10 +318,10 @@ func setup_game_end_window():
 	game_end_container.anchor_right = 1.0  # Right edge
 	game_end_container.anchor_top = 0.0    # Top edge
 	game_end_container.anchor_bottom = 0.0 # Top edge
-	game_end_container.offset_left = -275.0   # 275px from right edge (negative for left offset)
+	game_end_container.offset_left = -535.0   # 535px from right edge (2x larger: 520px + 15px margin)
 	game_end_container.offset_top = 15.0      # 15px from top edge
 	game_end_container.offset_right = -15.0   # 15px from right edge (negative)
-	game_end_container.offset_bottom = 320.0  # 305px tall container
+	game_end_container.offset_bottom = 625.0  # 610px tall container (2x larger: 305*2 + 15px top margin)
 	game_end_container.z_index = 100
 	game_end_canvas.add_child(game_end_container)
 	
