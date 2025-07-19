@@ -118,6 +118,10 @@ func initialize_player_with_id(id: int):
 	
 	# Setup UI - only visible for local player
 	setup_ui()
+	
+	# Connect to player registry updates to refresh names if needed
+	if not PlayerData.player_registry_updated.is_connected(_on_player_registry_updated):
+		PlayerData.player_registry_updated.connect(_on_player_registry_updated)
 	call_deferred("setup_notification_ui")
 	
 	# Setup systems
@@ -434,22 +438,23 @@ func setup_ui():
 	create_ccat_ui()
 	
 	# Style and update the name label for ALL players (local and remote)
+	print("🏷️ Setting name label for peer ", peer_id, " with name: '", player_name, "'")
 	if name_label:
 		name_label.text = player_name
 		name_label.add_theme_color_override("font_color", Color(1, 1, 1))
 		name_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 		name_label.add_theme_constant_override("outline_size", 4)
-		print("✅ Name label updated to: '", name_label.text, "'")
+		print("✅ Name label updated to: '", name_label.text, "' for peer ", peer_id)
 	else:
-		print("❌ Name label is null! Checking node path...")
+		print("❌ Name label is null for peer ", peer_id, "! Checking node path...")
 		var name_node = get_node_or_null("NameLabel")
 		if name_node:
-			print("⚠️ Found NameLabel node manually, updating @onready reference")
+			print("⚠️ Found NameLabel node manually for peer ", peer_id, ", updating @onready reference")
 			name_label = name_node
 			name_label.text = player_name
-			print("✅ Name fixed: '", name_label.text, "'")
+			print("✅ Name fixed: '", name_label.text, "' for peer ", peer_id)
 		else:
-			print("❌ NameLabel node not found in scene tree!")
+			print("❌ NameLabel node not found in scene tree for peer ", peer_id, "!")
 	
 	var ui_layer = $UI
 	# Show UI only for the local player (authority should match local peer ID)
@@ -466,6 +471,19 @@ func setup_ui():
 	else:
 		# Dim non-local players slightly for visual distinction
 		modulate = Color(0.9, 0.9, 0.9, 1.0)
+
+func _on_player_registry_updated():
+	"""Called when player registry is updated - refresh player name if needed"""
+	print("🔄 Player registry updated for peer ", peer_id, " - checking if name needs refresh")
+	var updated_data = PlayerData.get_player_data(peer_id)
+	if not updated_data.is_empty():
+		var new_name = updated_data["name"]
+		if new_name != player_name:
+			print("🏷️ Updating player name from '", player_name, "' to '", new_name, "' for peer ", peer_id)
+			player_name = new_name
+			if name_label:
+				name_label.text = player_name
+				print("✅ Name label refreshed to: '", name_label.text, "' for peer ", peer_id)
 
 func resize_ui_containers():
 	"""Resize the UI containers to accommodate larger progress bars"""
@@ -909,8 +927,15 @@ func eliminate_player(outcome: String, message: String):
 	else:
 		print("🚨 REMOTE PLAYER ELIMINATION - Updating GameEndWindow for others")
 		# For other players, just update the elimination window for remaining players
-		if main_scene and main_scene.game_end_window:
-			main_scene.game_end_window.add_eliminated_player(player_name, peer_id, outcome, time_lasted)
+		if main_scene and main_scene.has_method("get_game_end_window"):
+			var game_end_window = main_scene.get_game_end_window()
+			if game_end_window:
+				print("🚨 Found GameEndWindow, adding eliminated player: ", player_name)
+				game_end_window.add_eliminated_player(player_name, peer_id, outcome, time_lasted)
+			else:
+				print("🚨 GameEndWindow not found via get_game_end_window()")
+		else:
+			print("🚨 MainScene doesn't have get_game_end_window() method")
 	
 	# Add result to PlayerData for global tracking
 	PlayerData.add_player_result(player_name, outcome, time_lasted)
@@ -1045,11 +1070,15 @@ func sync_elimination_to_all(eliminated_name: String, eliminated_peer_id: int, e
 	if is_local_player and not is_eliminated and not is_eliminated_player:
 		print("📡 Updating GameEndWindow...")
 		var main_scene = get_node("/root/Main")
-		if main_scene and main_scene.game_end_window:
-			print("📡 GameEndWindow found, adding eliminated player")
-			main_scene.game_end_window.add_eliminated_player(eliminated_name, eliminated_peer_id, eliminated_outcome, eliminated_time)
+		if main_scene and main_scene.has_method("get_game_end_window"):
+			var game_end_window = main_scene.get_game_end_window()
+			if game_end_window:
+				print("📡 GameEndWindow found, adding eliminated player: ", eliminated_name)
+				game_end_window.add_eliminated_player(eliminated_name, eliminated_peer_id, eliminated_outcome, eliminated_time)
+			else:
+				print("📡 GameEndWindow not found via get_game_end_window()")
 		else:
-			print("📡 GameEndWindow not found or main_scene not found")
+			print("📡 MainScene not found or doesn't have get_game_end_window() method")
 	else:
 		print("📡 Not updating GameEndWindow (wrong conditions)")
 
@@ -1072,10 +1101,14 @@ func sync_game_end_to_all(finished_name: String, finished_peer_id: int, finished
 	if is_local_player and not is_eliminated and not is_finished_player:
 		print("📡 Updating GameEndWindow...")
 		var main_scene = get_node("/root/Main")
-		if main_scene and main_scene.game_end_window:
-			print("📡 GameEndWindow found, adding finished player")
-			main_scene.game_end_window.add_eliminated_player(finished_name, finished_peer_id, finished_outcome, finished_time)
+		if main_scene and main_scene.has_method("get_game_end_window"):
+			var game_end_window = main_scene.get_game_end_window()
+			if game_end_window:
+				print("📡 GameEndWindow found, adding finished player: ", finished_name)
+				game_end_window.add_eliminated_player(finished_name, finished_peer_id, finished_outcome, finished_time)
+			else:
+				print("📡 GameEndWindow not found via get_game_end_window()")
 		else:
-			print("📡 GameEndWindow not found or main_scene not found")
+			print("📡 MainScene not found or doesn't have get_game_end_window() method")
 	else:
 		print("📡 Not updating GameEndWindow (wrong conditions)") 

@@ -8,42 +8,98 @@ extends Control
 
 # Player elimination tracking
 var eliminated_players: Dictionary = {}
-var is_window_visible: bool = false
 
 func _ready():
 	"""Initialize the game end window"""
 	print("🎯 GameEndWindow initialized")
-	print("🎯 Initial position: ", position, " Size: ", size)
-	print("🎯 Initial anchors - Left: ", anchor_left, " Right: ", anchor_right)
-	print("🎯 Initial offsets - Left: ", offset_left, " Right: ", offset_right, " Top: ", offset_top, " Bottom: ", offset_bottom)
+	print("🎯 Positioning handled by MainSceneManager container")
 	
-	# Ensure correct positioning on initialization
-	anchor_left = 1.0
-	anchor_right = 1.0  
-	offset_left = -260.0
-	offset_right = -10.0
-	offset_top = 80.0
-	offset_bottom = 320.0
-	print("🎯 Set positioning in _ready - Position: ", position, " Size: ", size)
-	
-	# Add a bright background to make it visible during testing
+	# Add a styled background for permanent visibility
 	if has_node("WindowPanel"):
 		var panel = get_node("WindowPanel")
 		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.2, 0.2, 0.8, 0.9)  # Blue background with transparency
+		style.bg_color = Color(0.2, 0.2, 0.3, 0.9)  # Dark blue-gray background
 		style.border_width_left = 2
 		style.border_width_right = 2  
 		style.border_width_top = 2
 		style.border_width_bottom = 2
-		style.border_color = Color.WHITE
+		style.border_color = Color(0.8, 0.8, 1.0, 1.0)  # Light blue border
+		style.corner_radius_top_left = 8
+		style.corner_radius_top_right = 8
+		style.corner_radius_bottom_left = 8
+		style.corner_radius_bottom_right = 8
 		panel.add_theme_stylebox_override("panel", style)
-		print("🎯 Applied blue background style to GameEndWindow")
+		print("🎯 Applied permanent visibility styling to GameEndWindow")
 	
-	# Initially hide the window
-	hide_window()
+	# Keep window visible from start - no hiding
+	show_window()
+	
+	# Add initial placeholder message
+	_add_placeholder_message()
+	
+	# Connect to PlayerData signals for real-time updates
+	_connect_to_player_data()
+	
+	# Load any existing eliminations that happened before this window was created
+	_load_existing_eliminations()
 	
 	# Connect to multiplayer player elimination signals if available
 	_connect_to_players()
+
+func _connect_to_player_data():
+	"""Connect to PlayerData signals for real-time elimination updates"""
+	print("🎯 Connecting GameEndWindow to PlayerData signals...")
+	
+	if not PlayerData.player_result_added.is_connected(_on_player_result_added):
+		PlayerData.player_result_added.connect(_on_player_result_added)
+		print("🎯 Connected to PlayerData.player_result_added signal")
+	else:
+		print("🎯 Already connected to PlayerData.player_result_added signal")
+
+func _on_player_result_added(player_name: String, outcome: String, time_lasted: float):
+	"""Called when PlayerData receives a new elimination result"""
+	print("🎯 ====== PLAYERDATA SIGNAL RECEIVED ======")
+	print("🎯 Player: ", player_name, " Outcome: ", outcome, " Time: ", time_lasted)
+	
+	# Get the peer_id for this player (we need it for the GameEndWindow)
+	var peer_id = _get_peer_id_for_player_name(player_name)
+	print("🎯 Found peer_id for ", player_name, ": ", peer_id)
+	
+	if peer_id != -1:
+		print("🎯 Adding elimination to GameEndWindow...")
+		add_eliminated_player(player_name, peer_id, outcome, time_lasted)
+	else:
+		print("🎯 ❌ Could not find peer_id for player: ", player_name)
+
+func _get_peer_id_for_player_name(player_name: String) -> int:
+	"""Find the peer_id for a given player name"""
+	var all_players = PlayerData.get_all_players()
+	for peer_id in all_players.keys():
+		var player_data = all_players[peer_id]
+		if player_data.get("name", "") == player_name:
+			return peer_id
+	return -1
+
+func _load_existing_eliminations():
+	"""Load any eliminations that already exist in PlayerData"""
+	print("🎯 Loading existing eliminations from PlayerData...")
+	var all_results = PlayerData.all_player_results
+	print("🎯 Found ", all_results.size(), " existing results in PlayerData")
+	
+	for player_name in all_results.keys():
+		var result = all_results[player_name]
+		var outcome = result.get("outcome", "unknown")
+		var time_lasted = result.get("time_lasted", 0.0)
+		
+		print("🎯 Processing existing result: ", player_name, " - ", outcome)
+		
+		# Get peer_id and add to window
+		var peer_id = _get_peer_id_for_player_name(player_name)
+		if peer_id != -1:
+			print("🎯 Adding existing elimination: ", player_name)
+			add_eliminated_player(player_name, peer_id, outcome, time_lasted)
+		else:
+			print("🎯 ❌ Could not find peer_id for existing player: ", player_name)
 
 func _connect_to_players():
 	"""Connect to all existing players to listen for elimination events"""
@@ -51,34 +107,50 @@ func _connect_to_players():
 	pass
 
 func show_window():
-	"""Display the game end window"""
+	"""Display the game end window (permanently visible)"""
 	visible = true
-	is_window_visible = true
-	print("🎯 Game end window shown!")
-	print("🎯 Position: ", position, " Size: ", size)
-	print("🎯 Anchors - Left: ", anchor_left, " Right: ", anchor_right)
-	print("🎯 Offsets - Left: ", offset_left, " Right: ", offset_right, " Top: ", offset_top, " Bottom: ", offset_bottom)
-	
-	# Force correct positioning
-	anchor_left = 1.0
-	anchor_right = 1.0
-	offset_left = -260.0
-	offset_right = -10.0
-	offset_top = 80.0
-	offset_bottom = 320.0
-	print("🎯 Forced positioning - New position: ", position, " Size: ", size)
+	print("🎯 GameEndWindow is now permanently visible!")
+	print("🎯 Positioned by MainSceneManager container in top-right corner")
 
 func hide_window():
-	"""Hide the game end window"""
+	"""Hide the game end window (not used in permanent mode)"""
 	visible = false
-	is_window_visible = false
-	print("🎯 Game end window hidden")
+	print("🎯 GameEndWindow hidden (permanent mode - should not be called)")
+
+func _add_placeholder_message():
+	"""Add initial placeholder text when no players are eliminated yet"""
+	print("🎯 Adding placeholder message to GameEndWindow")
+	
+	# Clear any existing entries first
+	for child in players_container.get_children():
+		child.queue_free()
+	
+	# Add placeholder message
+	var placeholder_label = Label.new()
+	placeholder_label.text = "No eliminations yet..."
+	placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	placeholder_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.8, 1.0))  # Light gray
+	placeholder_label.add_theme_font_size_override("font_size", 12)
+	players_container.add_child(placeholder_label)
+
+func _clear_placeholder_message():
+	"""Remove the placeholder message when first elimination occurs"""
+	print("🎯 Clearing placeholder message from GameEndWindow")
+	for child in players_container.get_children():
+		if child is Label and child.text == "No eliminations yet...":
+			child.queue_free()
+			break
 
 func add_eliminated_player(player_name: String, peer_id: int, outcome: String, time_lasted: float):
 	"""Add a player to the elimination list with their results"""
-	print("🚫 GameEndWindow: Adding eliminated player: ", player_name, " (", outcome, ")")
-	print("🚫 Current window visible: ", is_window_visible)
-	print("🚫 Window position: ", position, " size: ", size)
+	print("🚫 ====== GAMEENDWINDOW: ADD_ELIMINATED_PLAYER CALLED ======")
+	print("🚫 Player: ", player_name, " (Peer: ", peer_id, ") Outcome: ", outcome)
+	print("🚫 Window is permanently visible, adding elimination entry")
+	
+	# Check if this player is already eliminated (prevent duplicates)
+	if eliminated_players.has(peer_id):
+		print("🚫 Player ", player_name, " already in elimination list, skipping")
+		return
 	
 	# Store player data
 	eliminated_players[peer_id] = {
@@ -88,15 +160,16 @@ func add_eliminated_player(player_name: String, peer_id: int, outcome: String, t
 		"timestamp": Time.get_ticks_msec()
 	}
 	
+	# Remove placeholder message if this is the first elimination
+	if eliminated_players.size() == 1:
+		print("🚫 First elimination - removing placeholder message")
+		_clear_placeholder_message()
+	
 	# Create or update player entry in UI
+	print("🚫 Creating player entry in UI...")
 	_create_player_entry(player_name, outcome, time_lasted)
 	
-	# Show window if this is the first elimination
-	if not is_window_visible:
-		print("🚫 Showing GameEndWindow for first elimination...")
-		show_window()
-	else:
-		print("🚫 GameEndWindow already visible, just adding entry")
+	print("🚫 ====== END ADD_ELIMINATED_PLAYER ======")
 
 func add_game_end_results(player_name: String, peer_id: int, outcome: String):
 	"""Add final game results for players who lasted until timer end"""

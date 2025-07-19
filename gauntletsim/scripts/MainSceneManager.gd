@@ -71,6 +71,13 @@ func spawn_all_players():
 	
 	# CRITICAL: Broadcast player data to all clients first
 	print("Broadcasting player registry to clients...")
+	
+	# Debug: Show what player data server is broadcasting
+	print("🔍 SERVER PLAYER DATA DEBUG (before broadcast):")
+	for peer_id in all_players.keys():
+		var player_data = all_players[peer_id]
+		print("  - Peer ", peer_id, ": ", player_data.get("name", "NO_NAME"), " (", player_data.get("sprite_path", "NO_SPRITE"), ")")
+	
 	PlayerData.broadcast_player_registry()
 	
 	# Wait longer for the broadcast to reach all clients
@@ -106,6 +113,12 @@ func spawn_all_players_on_clients():
 			print("⚠️ Client missing host player data, will retry when data arrives")
 			client_spawn_failed = true
 			return
+		
+		# Debug: Show what player data we actually have
+		print("🔍 CLIENT PLAYER DATA DEBUG:")
+		for peer_id in all_players.keys():
+			var player_data = all_players[peer_id]
+			print("  - Peer ", peer_id, ": ", player_data.get("name", "NO_NAME"), " (", player_data.get("sprite_path", "NO_SPRITE"), ")")
 	
 	# Spawn all players
 	for peer_id in all_players.keys():
@@ -168,8 +181,13 @@ func spawn_player_local(peer_id: int):
 
 func create_fallback_host_player():
 	"""Create a fallback host player for single-player mode"""
-	print("Creating fallback host player...")
-	PlayerData.register_player(1, "Host Player", "res://assets/characters/sean_spritesheet.png")
+	print("Creating fallback host player for single-player mode...")
+	# Use the current player's actual name if available, otherwise fallback
+	var actual_name = PlayerData.player_name
+	if actual_name.is_empty():
+		actual_name = "Solo Player"
+	print("Using player name for single-player: ", actual_name)
+	PlayerData.register_player(1, actual_name, "res://assets/characters/sean_spritesheet.png")
 	await get_tree().process_frame
 	spawn_player_local(1)
 
@@ -285,12 +303,48 @@ func setup_timer_ui():
 	print("🖥️ Timer UI created with LARGE size for maximum visibility")
 
 func setup_game_end_window():
-	"""Create and setup the game end window"""
+	"""Create and setup the game end window with proper top-right anchoring"""
+	# Create a CanvasLayer for UI that stays on screen (same as timer)
+	var game_end_canvas = CanvasLayer.new()
+	game_end_canvas.name = "GameEndCanvas"
+	add_child(game_end_canvas)
+	
+	# Create the game end window container (anchored to top-right)
+	var game_end_container = Control.new()
+	game_end_container.name = "GameEndContainer"
+	game_end_container.layout_mode = 3
+	game_end_container.anchors_preset = 2  # Top-right preset
+	game_end_container.anchor_left = 1.0   # Right edge
+	game_end_container.anchor_right = 1.0  # Right edge
+	game_end_container.anchor_top = 0.0    # Top edge
+	game_end_container.anchor_bottom = 0.0 # Top edge
+	game_end_container.offset_left = -275.0   # 275px from right edge (negative for left offset)
+	game_end_container.offset_top = 15.0      # 15px from top edge
+	game_end_container.offset_right = -15.0   # 15px from right edge (negative)
+	game_end_container.offset_bottom = 320.0  # 305px tall container
+	game_end_container.z_index = 100
+	game_end_canvas.add_child(game_end_container)
+	
+	# Instantiate the GameEndWindow scene and add it to the container
 	game_end_window = GAME_END_WINDOW_SCENE.instantiate()
-	add_child(game_end_window)
-	print("🎯 Game end window created at position: ", game_end_window.position)
-	print("🎯 Game end window size: ", game_end_window.size)
-	print("🎯 Game end window visible: ", game_end_window.visible)
+	game_end_window.anchors_preset = 15  # Fill preset to fill the container
+	game_end_window.anchor_left = 0.0
+	game_end_window.anchor_right = 1.0
+	game_end_window.anchor_top = 0.0
+	game_end_window.anchor_bottom = 1.0
+	game_end_window.offset_left = 0.0
+	game_end_window.offset_top = 0.0
+	game_end_window.offset_right = 0.0
+	game_end_window.offset_bottom = 0.0
+	game_end_container.add_child(game_end_window)
+	
+	print("🎯 GameEndWindow anchored to top-right corner using CanvasLayer")
+	print("🎯 Container position - Left: ", game_end_container.anchor_left, " Top: ", game_end_container.anchor_top)
+	print("🎯 Container offsets - Left: ", game_end_container.offset_left, " Right: ", game_end_container.offset_right)
+
+func get_game_end_window() -> Control:
+	"""Get reference to the GameEndWindow for elimination updates"""
+	return game_end_window
 
 func start_game_timer():
 	"""Start the game timer (server only)"""
