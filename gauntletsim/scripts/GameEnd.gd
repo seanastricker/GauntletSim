@@ -9,7 +9,7 @@ extends Control
 @onready var final_stats_label: Label = $CenterContainer/VBoxContainer/StatsContainer/FinalStatsLabel
 @onready var spectator_label: Label = $CenterContainer/VBoxContainer/SpectatorLabel
 @onready var other_players_list: VBoxContainer = $CenterContainer/VBoxContainer/OtherPlayersContainer/OtherPlayersList
-@onready var url_text: RichTextLabel = $CenterContainer/VBoxContainer/URLText
+@onready var logo_button: Button = $CenterContainer/VBoxContainer/LogoButtonContainer/LogoButton
 @onready var play_again_button: Button = $CenterContainer/VBoxContainer/ButtonContainer/PlayAgainButton
 @onready var quit_button: Button = $CenterContainer/VBoxContainer/ButtonContainer/QuitButton
 
@@ -34,8 +34,8 @@ func _ready():
 	play_again_button.pressed.connect(_on_play_again_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	
-	# Connect URL link signal
-	url_text.meta_clicked.connect(_on_url_clicked)
+	# Connect logo button signal
+	logo_button.pressed.connect(_on_logo_button_pressed)
 	
 	# Connect to PlayerData signal for real-time updates
 	print("🔗 Connecting to PlayerData.player_result_added signal...")
@@ -291,10 +291,10 @@ func _check_for_new_results():
 		else:
 			print("🔄 Result for ", result_player_name, " already in UI")
 
-func _on_url_clicked(meta: String):
-	"""Handle clicking the URL link"""
-	print("🔗 URL clicked: ", meta)
+func _on_logo_button_pressed():
+	"""Handle clicking the logo button"""
+	print("🔗 Logo button clicked")
 	
 	# Open the URL in the default browser
-	OS.shell_open(meta)
-	print("🔗 Opened URL in browser: ", meta) 
+	OS.shell_open("https://www.gauntletai.com")
+	print("🔗 Opened GauntletAI website in browser") 
