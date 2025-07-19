@@ -915,9 +915,10 @@ func eliminate_player(outcome: String, message: String):
 	# Add result to PlayerData for global tracking
 	PlayerData.add_player_result(player_name, outcome, time_lasted)
 	
-	# Sync elimination to all clients
-	if multiplayer.is_server():
-		sync_elimination_to_all.rpc(player_name, peer_id, outcome, time_lasted)
+	# Sync elimination to all clients via PlayerData singleton (persists across scenes)
+	print("📡 Calling PlayerData.sync_player_result_across_scenes.rpc for ", player_name)
+	PlayerData.sync_player_result_across_scenes.rpc(player_name, outcome, time_lasted)
+	print("📡 PlayerData RPC call completed")
 	
 	# Stop decay timer
 	if decay_timer:
@@ -984,9 +985,10 @@ func evaluate_end_game_condition():
 	# Add result to PlayerData for global tracking
 	PlayerData.add_player_result(player_name, final_outcome, time_lasted)
 	
-	# Sync final result to other players BEFORE transitioning
-	if multiplayer.is_server():
-		sync_game_end_to_all.rpc(player_name, peer_id, final_outcome, time_lasted)
+	# Sync final result to other players via PlayerData singleton (persists across scenes)
+	print("📡 Calling PlayerData.sync_player_result_across_scenes.rpc for ", player_name)
+	PlayerData.sync_player_result_across_scenes.rpc(player_name, final_outcome, time_lasted)
+	print("📡 PlayerData game end RPC call completed")
 	
 	# Use call_deferred to ensure the scene transition happens cleanly
 	call_deferred("transition_to_game_end")
@@ -1024,32 +1026,56 @@ func get_current_decay_rate() -> float:
 	else:
 		return decay_rate  # Normal decay rate
 
-@rpc("authority", "call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func sync_elimination_to_all(eliminated_name: String, eliminated_peer_id: int, eliminated_outcome: String, eliminated_time: float):
 	"""Sync player elimination to all remaining players"""
+	print("📡 RPC RECEIVED: sync_elimination_to_all for ", eliminated_name, " (peer ", eliminated_peer_id, ")")
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	var is_eliminated_player = (eliminated_peer_id == multiplayer.get_unique_id())
+	print("📡 This player peer_id: ", peer_id, " | Local player ID: ", multiplayer.get_unique_id())
+	print("📡 is_local_player: ", is_local_player, " | is_eliminated_player: ", is_eliminated_player)
 	
 	# Add to PlayerData for global tracking
+	print("📡 Adding player result to PlayerData...")
 	PlayerData.add_player_result(eliminated_name, eliminated_outcome, eliminated_time)
 	
 	# Only update GameEndWindow for players still in the game
+	print("📡 Checking if should update GameEndWindow...")
+	print("📡 Conditions: is_local_player=", is_local_player, " not is_eliminated=", not is_eliminated, " not is_eliminated_player=", not is_eliminated_player)
 	if is_local_player and not is_eliminated and not is_eliminated_player:
+		print("📡 Updating GameEndWindow...")
 		var main_scene = get_node("/root/Main")
 		if main_scene and main_scene.game_end_window:
+			print("📡 GameEndWindow found, adding eliminated player")
 			main_scene.game_end_window.add_eliminated_player(eliminated_name, eliminated_peer_id, eliminated_outcome, eliminated_time)
+		else:
+			print("📡 GameEndWindow not found or main_scene not found")
+	else:
+		print("📡 Not updating GameEndWindow (wrong conditions)")
 
-@rpc("authority", "call_local", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func sync_game_end_to_all(finished_name: String, finished_peer_id: int, finished_outcome: String, finished_time: float):
 	"""Sync game end result to all remaining players"""
+	print("📡 RPC RECEIVED: sync_game_end_to_all for ", finished_name, " (peer ", finished_peer_id, ")")
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	var is_finished_player = (finished_peer_id == multiplayer.get_unique_id())
+	print("📡 This player peer_id: ", peer_id, " | Local player ID: ", multiplayer.get_unique_id())
+	print("📡 is_local_player: ", is_local_player, " | is_finished_player: ", is_finished_player)
 	
-	# Add to PlayerData for global tracking
+	# Add to PlayerData for global tracking - THIS IS KEY for GameEnd scenes
+	print("📡 Adding game end result to PlayerData...")
 	PlayerData.add_player_result(finished_name, finished_outcome, finished_time)
 	
 	# Only update GameEndWindow for players still in the game
+	print("📡 Checking if should update GameEndWindow...")
+	print("📡 Conditions: is_local_player=", is_local_player, " not is_eliminated=", not is_eliminated, " not is_finished_player=", not is_finished_player)
 	if is_local_player and not is_eliminated and not is_finished_player:
+		print("📡 Updating GameEndWindow...")
 		var main_scene = get_node("/root/Main")
 		if main_scene and main_scene.game_end_window:
-			main_scene.game_end_window.add_eliminated_player(finished_name, finished_peer_id, finished_outcome, finished_time) 
+			print("📡 GameEndWindow found, adding finished player")
+			main_scene.game_end_window.add_eliminated_player(finished_name, finished_peer_id, finished_outcome, finished_time)
+		else:
+			print("📡 GameEndWindow not found or main_scene not found")
+	else:
+		print("📡 Not updating GameEndWindow (wrong conditions)") 

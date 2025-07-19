@@ -115,13 +115,23 @@ func add_player_result(player_name: String, outcome: String, time_lasted: float)
         "time_lasted": time_lasted
     }
     print("📊 PlayerData: Added result for ", player_name, " - ", outcome, " (", time_lasted, "s)")
+    print("📊 PlayerData: Total results now: ", all_player_results.size())
+    print("📊 PlayerData: All results: ", all_player_results)
     
     # Emit signal for GameEnd scenes to listen to
+    print("📊 PlayerData: EMITTING SIGNAL for ", player_name)
     player_result_added.emit(player_name, outcome, time_lasted)
+    print("📊 PlayerData: Signal emitted successfully")
 
 func get_all_player_results() -> Dictionary:
     """Get all player results"""
     return all_player_results
+
+@rpc("any_peer", "call_local", "reliable")
+func sync_player_result_across_scenes(player_name: String, outcome: String, time_lasted: float):
+    """RPC to sync player results across all scenes (including GameEnd.tscn)"""
+    print("🌐 PlayerData RPC RECEIVED: ", player_name, " - ", outcome, " (", time_lasted, "s)")
+    add_player_result(player_name, outcome, time_lasted)
 
 func clear_all_player_results():
     """Clear all player results"""

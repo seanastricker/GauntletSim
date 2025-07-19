@@ -26,13 +26,17 @@ var other_players: Dictionary = {}
 func _ready():
 	"""Initialize the game end scene"""
 	print("🎮 GameEnd scene initialized")
+	print("🔍 PlayerData instance: ", PlayerData)
+	print("🔍 PlayerData results at start: ", PlayerData.get_all_player_results())
 	
 	# Connect button signals
 	play_again_button.pressed.connect(_on_play_again_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
 	
 	# Connect to PlayerData signal for real-time updates
+	print("🔗 Connecting to PlayerData.player_result_added signal...")
 	PlayerData.player_result_added.connect(_on_player_result_added)
+	print("🔗 Signal connected successfully!")
 	
 	# Initially hide spectator info
 	spectator_label.visible = false
@@ -40,6 +44,14 @@ func _ready():
 	# Set up the scene with player data (will be passed when transitioning)
 	call_deferred("setup_player_results")
 	call_deferred("load_existing_results")
+	
+	# Set up periodic check for new results (backup mechanism)
+	var result_check_timer = Timer.new()
+	result_check_timer.wait_time = 2.0  # Check every 2 seconds
+	result_check_timer.timeout.connect(_check_for_new_results)
+	result_check_timer.autostart = true
+	add_child(result_check_timer)
+	print("🔄 Set up periodic result checking every 2 seconds")
 
 func setup_player_results():
 	"""Setup the player's individual results display"""
@@ -226,18 +238,51 @@ func clear_other_players():
 func load_existing_results():
 	"""Load any existing player results from PlayerData"""
 	print("📊 Loading existing player results...")
+	print("📊 Current player name: ", self.player_name)
 	var all_results = PlayerData.get_all_player_results()
+	print("📊 All results in PlayerData: ", all_results)
+	print("📊 Number of results found: ", all_results.size())
+	
+	if all_results.size() == 0:
+		print("📊 No existing results found - this might be the issue!")
 	
 	for other_player_name in all_results:
 		var result = all_results[other_player_name]
+		print("📊 Processing result for: ", other_player_name, " (Outcome: ", result.outcome, ")")
 		# Don't add our own result
 		if other_player_name != self.player_name:
+			print("📊 Adding other player result: ", other_player_name)
 			add_other_player_result(other_player_name, result.outcome, result.time_lasted)
+		else:
+			print("📊 Skipping own result for: ", other_player_name)
 
 func _on_player_result_added(other_player_name: String, outcome: String, time_lasted: float):
 	"""Handle new player result from PlayerData signal"""
-	print("📊 Received new player result: ", other_player_name, " - ", outcome)
+	print("🔔 SIGNAL RECEIVED: New player result - ", other_player_name, " - ", outcome, " (", time_lasted, "s)")
+	print("🔔 Current player name: ", self.player_name)
 	
 	# Don't add our own result
 	if other_player_name != self.player_name:
-		add_other_player_result(other_player_name, outcome, time_lasted) 
+		print("🔔 Adding other player result to UI: ", other_player_name)
+		add_other_player_result(other_player_name, outcome, time_lasted)
+	else:
+		print("🔔 Ignoring own result: ", other_player_name)
+
+func _check_for_new_results():
+	"""Periodic backup check for new results (in case signals fail)"""
+	print("🔄 Periodic check: Looking for new results...")
+	var all_results = PlayerData.get_all_player_results()
+	print("🔄 Total results in PlayerData: ", all_results.size())
+	
+	for result_player_name in all_results:
+		# Skip our own result
+		if result_player_name == self.player_name:
+			continue
+			
+		# Check if we already have this result in our UI
+		if result_player_name not in other_players:
+			var result = all_results[result_player_name]
+			print("🔄 Found NEW result for: ", result_player_name, " - ", result.outcome)
+			add_other_player_result(result_player_name, result.outcome, result.time_lasted)
+		else:
+			print("🔄 Result for ", result_player_name, " already in UI") 
