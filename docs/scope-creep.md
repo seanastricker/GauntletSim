@@ -3,6 +3,7 @@
 ## Player Interaction
 - players have a special skill that gives other players boosts
 - players can interact with other players, cool down
+- players can add each other on X when interacting
 
 ## Speech Bubbles
 - Pokemon style (in a box below the actual screen)
@@ -30,3 +31,6 @@
 ## Restarting New Game
 - failed to host
 - Kept Matt from previous game
+
+## Music
+- different music for different places

@@ -835,27 +835,55 @@ func eliminate_player(outcome: String, message: String):
 	
 	print("🕒 Calculating time lasted for elimination...")
 	print("🕒 Main scene found: ", main_scene != null)
+	print("🔍 DEBUG: Searching for MainSceneManager...")
+	
+	# Try to find the actual MainSceneManager
+	var scene_manager = null
+	if main_scene:
+		# Check if main_scene itself has the script
+		if main_scene.has_method("get_game_time_remaining"):
+			scene_manager = main_scene
+			print("🔍 Found MainSceneManager at /root/Main")
+		else:
+			# Look for children that might have the MainSceneManager script
+			for child in main_scene.get_children():
+				if child.has_method("get_game_time_remaining"):
+					scene_manager = child
+					print("🔍 Found MainSceneManager at child: ", child.name)
+					break
+		
+		if not scene_manager:
+			# Try alternative paths
+			scene_manager = get_node_or_null("/root/MainSceneManager")
+			if scene_manager and scene_manager.has_method("get_game_time_remaining"):
+				print("🔍 Found MainSceneManager at /root/MainSceneManager")
+			else:
+				scene_manager = null
+	
+	if scene_manager:
+		main_scene = scene_manager
+		print("🔍 Using scene_manager for time calculation")
+	else:
+		print("🔍 No MainSceneManager found, using fallback")
 	
 	if main_scene:
-		print("🕒 Attempting to access GAME_DURATION...")
-		if main_scene.has_method("get") and main_scene.get("GAME_DURATION") != null:
-			print("🕒 GAME_DURATION: ", main_scene.GAME_DURATION)
-		else:
-			print("❌ GAME_DURATION not accessible!")
-			time_lasted = 30.0
-			print("🕒 Using fallback time: ", time_lasted, " seconds")
+		print("🕒 Attempting time calculation with safe approach...")
+		# Set fallback first, then try to calculate actual time
+		time_lasted = 30.0
+		print("🕒 Default fallback time set: ", time_lasted, " seconds")
 		
-		if time_lasted == 0.0:
-			print("🕒 Attempting to get game time remaining...")
-			if main_scene.has_method("get_game_time_remaining"):
-				var game_time_remaining = main_scene.get_game_time_remaining()
-				print("🕒 Game time remaining: ", game_time_remaining)
-				time_lasted = main_scene.GAME_DURATION - game_time_remaining
-				print("🕒 Calculated time lasted: ", time_lasted, " seconds")
-			else:
-				print("❌ get_game_time_remaining method not found!")
-				time_lasted = 30.0
-				print("🕒 Using fallback time: ", time_lasted, " seconds")
+		# Try to get actual time - if it works, great; if not, we keep fallback
+		print("🕒 Attempting to get game time remaining...")
+		print("🔍 DEBUG: main_scene type: ", typeof(main_scene))
+		print("🔍 DEBUG: main_scene class: ", main_scene.get_class())
+		print("🔍 DEBUG: has_method check: ", main_scene.has_method("get_game_time_remaining"))
+		if main_scene.has_method("get_game_time_remaining"):
+			var game_time_remaining = main_scene.get_game_time_remaining()
+			print("🕒 Game time remaining: ", game_time_remaining)
+			time_lasted = main_scene.GAME_DURATION - game_time_remaining
+			print("🕒 Calculated time lasted: ", time_lasted, " seconds")
+		else:
+			print("🕒 get_game_time_remaining method not found, keeping fallback time")
 	else:
 		print("❌ Could not find main scene for time calculation!")
 		time_lasted = 30.0  # Fallback time
