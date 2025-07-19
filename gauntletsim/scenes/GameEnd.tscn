@@ -1,0 +1,99 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5n8g4iamxqwp"]
+
+[ext_resource type="Script" path="res://scripts/GameEnd.gd" id="1_0xrms"]
+
+[node name="GameEnd" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_0xrms")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(400, 0)
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 72
+text = "Game Over"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ResultLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 56
+text = "You got a $200k job!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatsContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TimeLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Time Lasted: 1:30"
+horizontal_alignment = 1
+
+[node name="FinalStatsLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Final Stats: Health 45, Social 30, CCAT 42"
+horizontal_alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="SpectatorLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Watching: PlayerName"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OtherPlayersContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="OtherPlayersTitle" type="Label" parent="CenterContainer/VBoxContainer/OtherPlayersContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+text = "Other Players:"
+horizontal_alignment = 1
+
+[node name="OtherPlayersList" type="VBoxContainer" parent="CenterContainer/VBoxContainer/OtherPlayersContainer"]
+layout_mode = 2
+
+[node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="PlayAgainButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+size_flags_horizontal = 3
+text = "Play Again"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+size_flags_horizontal = 3
+text = "Quit Game" 

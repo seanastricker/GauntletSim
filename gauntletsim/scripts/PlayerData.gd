@@ -12,6 +12,18 @@ var players_data: Dictionary = {}
 # Signal emitted when player registry is synchronized from server
 signal player_registry_updated
 
+# Game end data for transitions
+var game_end_outcome: String = ""
+var game_end_player_name: String = ""
+var game_end_time_lasted: float = 0.0
+var game_end_health: int = 0
+var game_end_social: int = 0
+var game_end_ccat: int = 0
+
+# All players' results for GameEnd scene
+var all_player_results: Dictionary = {}
+signal player_result_added(player_name: String, outcome: String, time_lasted: float)
+
 func register_player(peer_id: int, display_name: String, sprite_path: String):
     """Register a player's data for multiplayer synchronization"""
     # Assign spawn position based on peer ID for consistent positioning
@@ -65,6 +77,59 @@ func get_player_data(peer_id: int) -> Dictionary:
 func get_all_players() -> Dictionary:
     """Get all registered players"""
     return players_data
+
+func set_game_end_data(outcome: String, name: String, time_lasted: float, health: int, social: int, ccat: int):
+    """Store game end data for scene transition"""
+    game_end_outcome = outcome
+    game_end_player_name = name
+    game_end_time_lasted = time_lasted
+    game_end_health = health
+    game_end_social = social
+    game_end_ccat = ccat
+    print("📊 Game end data stored: ", name, " - ", outcome, " - ", time_lasted, "s")
+
+func get_game_end_data() -> Dictionary:
+    """Get stored game end data"""
+    return {
+        "outcome": game_end_outcome,
+        "name": game_end_player_name,
+        "time_lasted": game_end_time_lasted,
+        "health": game_end_health,
+        "social": game_end_social,
+        "ccat": game_end_ccat
+    }
+
+func clear_game_end_data():
+    """Clear game end data"""
+    game_end_outcome = ""
+    game_end_player_name = ""
+    game_end_time_lasted = 0.0
+    game_end_health = 0
+    game_end_social = 0
+    game_end_ccat = 0
+
+func add_player_result(player_name: String, outcome: String, time_lasted: float):
+    """Add a player's result to the global results"""
+    all_player_results[player_name] = {
+        "outcome": outcome,
+        "time_lasted": time_lasted
+    }
+    print("📊 PlayerData: Added result for ", player_name, " - ", outcome, " (", time_lasted, "s)")
+    
+    # Emit signal for GameEnd scenes to listen to
+    player_result_added.emit(player_name, outcome, time_lasted)
+
+func get_all_player_results() -> Dictionary:
+    """Get all player results"""
+    return all_player_results
+
+func clear_all_player_results():
+    """Clear all player results"""
+    print("📊 PlayerData: BEFORE clearing - Results count: ", all_player_results.size())
+    print("📊 Previous results: ", all_player_results)
+    all_player_results.clear()
+    print("📊 PlayerData: AFTER clearing - Results count: ", all_player_results.size())
+    print("📊 PlayerData: All player results cleared successfully")
 
 func remove_player(peer_id: int):
     """Remove a player from the registry"""

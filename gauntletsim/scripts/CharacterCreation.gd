@@ -13,6 +13,7 @@ var character_sprites = [
 	"res://assets/characters/matt.png",
 	"res://assets/characters/radin.png",
 	"res://assets/characters/darren.png",
+	"res://assets/characters/hutch.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_01.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_02.png",
 	"res://assets/characters/Character_Generator/0_Premade_Characters/16x16/Premade_Character_03.png",
@@ -22,6 +23,11 @@ var character_sprites = [
 var current_sprite_index = 0
 
 func _ready():
+	# Clear any previous game data when returning to character creation
+	PlayerData.clear_all_player_results()
+	PlayerData.clear_game_end_data()
+	print("🧹 CharacterCreation: Cleared all previous game data")
+	
 	start_button.pressed.connect(_on_start_button_pressed)
 	previous_button.pressed.connect(_on_previous_button_pressed)
 	next_button.pressed.connect(_on_next_button_pressed)

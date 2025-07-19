@@ -23,3 +23,10 @@
 
 ## End of Game
 - link to Cohort 3 application
+
+## Player appearance
+- removing smoothing effect for better graphics
+
+## Restarting New Game
+- failed to host
+- Kept Matt from previous game

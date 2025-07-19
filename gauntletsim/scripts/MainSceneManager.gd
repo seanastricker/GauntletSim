@@ -24,9 +24,17 @@ var game_ended: bool = false
 # Timer UI
 var timer_label: Label
 
+# Game End Window
+var game_end_window: Control
+const GAME_END_WINDOW_SCENE = preload("res://scenes/GameEndWindow.tscn")
+
 func _ready():
 	"""Initialize the main scene with multiplayer support"""
 	print("MainSceneManager initializing...")
+	
+	# Clear previous game data when starting a new game
+	PlayerData.clear_all_player_results()
+	print("🧹 Cleared previous game results")
 	
 	# Setup multiplayer callbacks
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -39,6 +47,9 @@ func _ready():
 	# Setup game timer and UI
 	setup_game_timer()
 	setup_timer_ui()
+	
+	# Setup game end window
+	setup_game_end_window()
 	
 	# Check if we have an active multiplayer session
 	if multiplayer.has_multiplayer_peer() and PlayerData.get_all_players().size() > 0:
@@ -149,6 +160,9 @@ func spawn_player_local(peer_id: int):
 	
 	# Initialize with peer_id
 	if player_instance.has_method("initialize_player_with_id"):
+		print("🎯 SPAWNING PLAYER - Peer ID: ", peer_id, " Position: ", player_instance.global_position)
+		print("🎯 Current multiplayer unique ID: ", multiplayer.get_unique_id())
+		print("🎯 Is this player local? ", peer_id == multiplayer.get_unique_id())
 		player_instance.initialize_player_with_id(peer_id)
 		print("✅ ", node_type, " spawned player ", peer_id, " at position ", player_instance.global_position)
 
@@ -269,6 +283,14 @@ func setup_timer_ui():
 	
 	timer_container.add_child(timer_label)
 	print("🖥️ Timer UI created with LARGE size for maximum visibility")
+
+func setup_game_end_window():
+	"""Create and setup the game end window"""
+	game_end_window = GAME_END_WINDOW_SCENE.instantiate()
+	add_child(game_end_window)
+	print("🎯 Game end window created at position: ", game_end_window.position)
+	print("🎯 Game end window size: ", game_end_window.size)
+	print("🎯 Game end window visible: ", game_end_window.visible)
 
 func start_game_timer():
 	"""Start the game timer (server only)"""

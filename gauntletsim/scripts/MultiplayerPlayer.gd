@@ -600,22 +600,39 @@ func modify_social(amount: int) -> void:
 
 func modify_ccat_score(amount: int) -> void:
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("📊 MODIFY_CCAT_SCORE - Player: ", player_name, " (Peer: ", peer_id, ") Amount: ", amount)
+	print("📊 Is Local Player: ", is_local_player, " | Is Eliminated: ", is_eliminated)
+	print("📊 CCAT before change: ", ccat_score)
+	
 	if is_local_player and not is_eliminated:
+		print("📊 Applying CCAT change to local player")
 		self.ccat_score = ccat_score + amount
+		print("📊 CCAT after change: ", ccat_score)
 		sync_stats.rpc(health, social, ccat_score)
+		print("📊 Stats synced via RPC")
 		
 		# Check for instant lose condition after CCAT change
 		check_instant_lose_conditions()
+	else:
+		print("📊 Skipping CCAT change - not local player or already eliminated")
 
 func setup_decay_timer() -> void:
 	"""Initialize the stat decay system"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("⏲️ SETUP_DECAY_TIMER - Player: ", player_name, " (Peer: ", peer_id, ")")
+	print("⏲️ Is Local Player: ", is_local_player)
+	print("⏲️ Multiplayer Unique ID: ", multiplayer.get_unique_id())
+	
 	if is_local_player:
+		print("⏲️ Setting up decay timer for LOCAL player ", player_name)
 		decay_timer = Timer.new()
 		decay_timer.wait_time = get_current_decay_rate()
 		decay_timer.autostart = true
 		decay_timer.timeout.connect(_on_decay_timer_timeout)
 		add_child(decay_timer)
+		print("⏲️ Decay timer created with wait_time: ", decay_timer.wait_time, " seconds")
+	else:
+		print("⏲️ NOT setting up decay timer - this is a REMOTE player")
 
 func update_decay_rate():
 	"""Update the decay timer rate based on current health"""
@@ -627,10 +644,18 @@ func update_decay_rate():
 func _on_decay_timer_timeout() -> void:
 	"""Gradually decrease all stats over time"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("⏰ DECAY TIMER TIMEOUT - Player: ", player_name, " (Peer: ", peer_id, ")")
+	print("⏰ Is Local Player: ", is_local_player, " | Is Eliminated: ", is_eliminated)
+	print("⏰ Current stats - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
+	
 	if is_local_player and not is_eliminated:
+		print("⏰ Applying decay to local player ", player_name)
 		modify_health(-1)
 		modify_social(-1)
 		modify_ccat_score(-1)
+		print("⏰ After decay - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
+	else:
+		print("⏰ Skipping decay - not local player or already eliminated")
 
 func setup_collision():
 	"""Setup collision shape"""
@@ -774,25 +799,97 @@ func setup_notification_ui():
 func check_instant_lose_conditions():
 	"""Check for conditions that cause immediate game loss"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("🔍 CHECKING INSTANT LOSE - Player: ", player_name, " (Peer: ", peer_id, ")")
+	print("🔍 Is Local Player: ", is_local_player, " | Is Eliminated: ", is_eliminated)
+	print("🔍 Current CCAT Score: ", ccat_score)
+	
 	if not is_local_player or is_eliminated:
+		print("🔍 Skipping instant lose check - not local player or already eliminated")
 		return
 	
 	# CCAT Score below 40 = instant elimination
 	if ccat_score < 40:
+		print("🚨 INSTANT ELIMINATION TRIGGERED! CCAT: ", ccat_score, " < 40")
 		eliminate_player("lose_ccat", "You have been kicked out!")
 		return
+	else:
+		print("🔍 CCAT score safe: ", ccat_score, " >= 40")
 
 func eliminate_player(outcome: String, message: String):
 	"""Eliminate a player from the game"""
+	print("🚨 ELIMINATE_PLAYER CALLED for ", player_name, " - Outcome: ", outcome)
+	print("🚨 Player ID: ", peer_id, " | Local Player ID: ", multiplayer.get_unique_id())
+	print("🚨 Already eliminated: ", is_eliminated)
+	
 	if is_eliminated:
+		print("🚨 Player already eliminated, skipping")
 		return
 	
-	print("🚫 Player ", player_name, " eliminated: ", outcome)
+	print("🚨 PROCEEDING WITH ELIMINATION for ", player_name)
 	is_eliminated = true
 	game_outcome = outcome
 	
-	# Show notification
-	show_notification(message, Color.RED)
+	# Calculate time lasted - with comprehensive error handling
+	var main_scene = get_node("/root/Main")
+	var time_lasted = 0.0
+	
+	print("🕒 Calculating time lasted for elimination...")
+	print("🕒 Main scene found: ", main_scene != null)
+	
+	if main_scene:
+		print("🕒 Attempting to access GAME_DURATION...")
+		if main_scene.has_method("get") and main_scene.get("GAME_DURATION") != null:
+			print("🕒 GAME_DURATION: ", main_scene.GAME_DURATION)
+		else:
+			print("❌ GAME_DURATION not accessible!")
+			time_lasted = 30.0
+			print("🕒 Using fallback time: ", time_lasted, " seconds")
+		
+		if time_lasted == 0.0:
+			print("🕒 Attempting to get game time remaining...")
+			if main_scene.has_method("get_game_time_remaining"):
+				var game_time_remaining = main_scene.get_game_time_remaining()
+				print("🕒 Game time remaining: ", game_time_remaining)
+				time_lasted = main_scene.GAME_DURATION - game_time_remaining
+				print("🕒 Calculated time lasted: ", time_lasted, " seconds")
+			else:
+				print("❌ get_game_time_remaining method not found!")
+				time_lasted = 30.0
+				print("🕒 Using fallback time: ", time_lasted, " seconds")
+	else:
+		print("❌ Could not find main scene for time calculation!")
+		time_lasted = 30.0  # Fallback time
+		print("🕒 Using fallback time: ", time_lasted, " seconds")
+	
+	# Check if this is the local player
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	print("🚨 Is this the local player? ", is_local_player)
+	
+	if is_local_player:
+		print("🚨 LOCAL PLAYER ELIMINATION - Storing data and transitioning to GameEnd.tscn")
+		# Store player data in a singleton for the GameEnd scene
+		PlayerData.set_game_end_data(outcome, player_name, time_lasted, health, social, ccat_score)
+		print("🚨 Data stored successfully")
+		print("🚨 PlayerData game_end_outcome: ", PlayerData.game_end_outcome)
+		print("🚨 PlayerData game_end_player_name: ", PlayerData.game_end_player_name)
+		print("🚨 PlayerData game_end_time_lasted: ", PlayerData.game_end_time_lasted)
+		
+		print("🚨 Calling scene transition...")
+		# Use call_deferred to ensure the scene transition happens on the next frame
+		call_deferred("_transition_to_game_end")
+		print("🚨 Scene transition scheduled!")
+	else:
+		print("🚨 REMOTE PLAYER ELIMINATION - Updating GameEndWindow for others")
+		# For other players, just update the elimination window for remaining players
+		if main_scene and main_scene.game_end_window:
+			main_scene.game_end_window.add_eliminated_player(player_name, peer_id, outcome, time_lasted)
+	
+	# Add result to PlayerData for global tracking
+	PlayerData.add_player_result(player_name, outcome, time_lasted)
+	
+	# Sync elimination to all clients
+	if multiplayer.is_server():
+		sync_elimination_to_all.rpc(player_name, peer_id, outcome, time_lasted)
 	
 	# Stop decay timer
 	if decay_timer:
@@ -801,36 +898,75 @@ func eliminate_player(outcome: String, message: String):
 	# Disable movement
 	set_physics_process(false)
 
+func _transition_to_game_end():
+	"""Safely transition to GameEnd scene - called via call_deferred"""
+	print("🚨 _TRANSITION_TO_GAME_END called!")
+	print("🚨 About to change scene to GameEnd.tscn...")
+	get_tree().change_scene_to_file("res://scenes/GameEnd.tscn")
+	print("🚨 Scene change completed!")
+
 func evaluate_end_game_condition():
 	"""Evaluate win/lose condition when game time ends (called by MainSceneManager)"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	print("🎯 evaluate_end_game_condition called for peer ", peer_id, " (local: ", is_local_player, ", eliminated: ", is_eliminated, ")")
+	print("🎯 Player ", player_name, " stats - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
 	
-	if not is_local_player or is_eliminated:
-		print("🎯 Skipping evaluation - not local player or already eliminated")
+	if not is_local_player:
+		print("🎯 Skipping evaluation - not local player")
 		return
 	
-	print("📊 Evaluating end-game condition for ", player_name)
+	if is_eliminated:
+		print("🎯 Skipping evaluation - already eliminated")
+		return
+	
+	print("📊 Evaluating end-game condition for LOCAL player: ", player_name)
 	print("📊 Final stats - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
 	
-	# Check lose condition: Social < 25
-	if social < 25:
-		game_outcome = "lose_social"
-		show_notification("You did not get a job offer", Color.RED)
-		print("❌ ", player_name, " lost: Social score too low (", social, ")")
-		return
+	# Calculate time lasted (full game duration)
+	var main_scene = get_node("/root/Main")
+	var time_lasted = 60.0  # Full game duration since timer ended
+	if main_scene and main_scene.has_method("get_game_time_remaining"):
+		time_lasted = main_scene.GAME_DURATION
+		print("📊 Time lasted: ", time_lasted, " seconds (full game duration)")
 	
-	# Check win condition: CCAT >= 40 AND Social >= 25
+	# Determine outcome based on final stats
+	var final_outcome = ""
+	
+	# Check win condition FIRST: CCAT >= 40 AND Social >= 25
 	if ccat_score >= 40 and social >= 25:
-		game_outcome = "win"
-		show_notification("You got a $200k job!", Color.GREEN)
-		print("🎉 ", player_name, " won! CCAT: ", ccat_score, " Social: ", social)
-		return
+		final_outcome = "win"
+		print("🎉 ", player_name, " WON! CCAT: ", ccat_score, " >= 40, Social: ", social, " >= 25")
+	# Check lose condition: Social < 25
+	elif social < 25:
+		final_outcome = "lose_social"
+		print("❌ ", player_name, " lost: Social score too low (", social, " < 25)")
+	# Final fallback: CCAT must be < 40 if we reach here
+	else:
+		final_outcome = "lose_ccat"
+		print("❌ ", player_name, " lost: CCAT score too low (", ccat_score, " < 40)")
 	
-	# This shouldn't happen if instant lose worked, but just in case
-	game_outcome = "lose_ccat"
-	show_notification("You have been kicked out!", Color.RED)
-	print("❌ ", player_name, " lost: CCAT score too low (", ccat_score, ")")
+	game_outcome = final_outcome
+	
+	print("📊 FINAL OUTCOME: ", final_outcome, " for player ", player_name)
+	
+	# Store player data and transition to GameEnd scene
+	print("📊 Storing game end data and transitioning to GameEnd scene...")
+	PlayerData.set_game_end_data(final_outcome, player_name, time_lasted, health, social, ccat_score)
+	
+	# Add result to PlayerData for global tracking
+	PlayerData.add_player_result(player_name, final_outcome, time_lasted)
+	
+	# Sync final result to other players BEFORE transitioning
+	if multiplayer.is_server():
+		sync_game_end_to_all.rpc(player_name, peer_id, final_outcome, time_lasted)
+	
+	# Use call_deferred to ensure the scene transition happens cleanly
+	call_deferred("transition_to_game_end")
+
+func transition_to_game_end():
+	"""Transition to the GameEnd scene"""
+	print("🎬 Transitioning to GameEnd scene...")
+	get_tree().change_scene_to_file("res://scenes/GameEnd.tscn")
 
 func show_notification(message: String, color: Color):
 	"""Display a notification message to the player"""
@@ -858,4 +994,34 @@ func get_current_decay_rate() -> float:
 	if health == 0:
 		return decay_rate / 3.0  # 3x faster decay when health is 0
 	else:
-		return decay_rate  # Normal decay rate 
+		return decay_rate  # Normal decay rate
+
+@rpc("authority", "call_local", "reliable")
+func sync_elimination_to_all(eliminated_name: String, eliminated_peer_id: int, eliminated_outcome: String, eliminated_time: float):
+	"""Sync player elimination to all remaining players"""
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	var is_eliminated_player = (eliminated_peer_id == multiplayer.get_unique_id())
+	
+	# Add to PlayerData for global tracking
+	PlayerData.add_player_result(eliminated_name, eliminated_outcome, eliminated_time)
+	
+	# Only update GameEndWindow for players still in the game
+	if is_local_player and not is_eliminated and not is_eliminated_player:
+		var main_scene = get_node("/root/Main")
+		if main_scene and main_scene.game_end_window:
+			main_scene.game_end_window.add_eliminated_player(eliminated_name, eliminated_peer_id, eliminated_outcome, eliminated_time)
+
+@rpc("authority", "call_local", "reliable")
+func sync_game_end_to_all(finished_name: String, finished_peer_id: int, finished_outcome: String, finished_time: float):
+	"""Sync game end result to all remaining players"""
+	var is_local_player = (peer_id == multiplayer.get_unique_id())
+	var is_finished_player = (finished_peer_id == multiplayer.get_unique_id())
+	
+	# Add to PlayerData for global tracking
+	PlayerData.add_player_result(finished_name, finished_outcome, finished_time)
+	
+	# Only update GameEndWindow for players still in the game
+	if is_local_player and not is_eliminated and not is_finished_player:
+		var main_scene = get_node("/root/Main")
+		if main_scene and main_scene.game_end_window:
+			main_scene.game_end_window.add_eliminated_player(finished_name, finished_peer_id, finished_outcome, finished_time) 
