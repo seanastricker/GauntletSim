@@ -1,9 +1,79 @@
-[gd_scene load_steps=5 format=3 uid="uid://b5n8g4iamxqwp"]
+[gd_scene load_steps=11 format=3 uid="uid://b5n8g4iamxqwp"]
 
 [ext_resource type="Script" path="res://scripts/GameEnd.gd" id="1_0xrms"]
 [ext_resource type="Texture2D" path="res://assets/ui/gauntlet-logo-final.png" id="3_logo"]
 
+[sub_resource type="StyleBoxFlat" id="PlayAgainButton_normal"]
+bg_color = Color(0.059, 1, 0.6, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.047, 0.8, 0.48, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
+[sub_resource type="StyleBoxFlat" id="PlayAgainButton_hover"]
+bg_color = Color(0.047, 0.8, 0.48, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.035, 0.6, 0.36, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="PlayAgainButton_pressed"]
+bg_color = Color(0.035, 0.6, 0.36, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.024, 0.4, 0.24, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="QuitButton_normal"]
+bg_color = Color(0.047, 0.137, 0.259, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.035, 0.1, 0.2, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="QuitButton_hover"]
+bg_color = Color(0.035, 0.1, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.024, 0.07, 0.14, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="QuitButton_pressed"]
+bg_color = Color(0.024, 0.07, 0.14, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.012, 0.035, 0.07, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_normal"]
 bg_color = Color(0.059, 1, 0.6, 1)
@@ -56,39 +126,45 @@ anchor_bottom = 1.0
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(400, 0)
+theme_override_constants/separation = 16
 
 [node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 72
+theme_override_font_sizes/font_size = 84
 theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Game Over"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_constants/outline_size = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 0.3)
 
 [node name="HSeparator" type="HSeparator" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="ResultLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 56
+theme_override_font_sizes/font_size = 64
 text = "You got a $200k job!"
 horizontal_alignment = 1
 vertical_alignment = 1
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(1, 1, 1, 0.5)
 
 [node name="StatsContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="TimeLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 0.8)
 text = "Time Lasted: 1:30"
 horizontal_alignment = 1
 
 [node name="FinalStatsLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
-theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 0.8)
 text = "Final Stats: Health 45, Social 30, CCAT 42"
 horizontal_alignment = 1
 
@@ -105,52 +181,71 @@ vertical_alignment = 1
 
 [node name="OtherPlayersContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="OtherPlayersTitle" type="Label" parent="CenterContainer/VBoxContainer/OtherPlayersContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 42
+theme_override_font_sizes/font_size = 48
 theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Other Players:"
 horizontal_alignment = 1
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(1, 1, 1, 0.3)
 
 [node name="OtherPlayersList" type="VBoxContainer" parent="CenterContainer/VBoxContainer/OtherPlayersContainer"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="HSeparator3" type="HSeparator" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="ButtonContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 16
 
 [node name="PlayAgainButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+custom_minimum_size = Vector2(180, 60)
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.024, 0.4, 0.24, 1)
+theme_override_styles/normal = SubResource("PlayAgainButton_normal")
+theme_override_styles/hover = SubResource("PlayAgainButton_hover")
+theme_override_styles/pressed = SubResource("PlayAgainButton_pressed")
 size_flags_horizontal = 3
 text = "Play Again"
 
 [node name="QuitButton" type="Button" parent="CenterContainer/VBoxContainer/ButtonContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 36
+custom_minimum_size = Vector2(180, 60)
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("QuitButton_normal")
+theme_override_styles/hover = SubResource("QuitButton_hover")
+theme_override_styles/pressed = SubResource("QuitButton_pressed")
 size_flags_horizontal = 3
 text = "Quit Game"
 
 [node name="PromotionalText" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
-theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 0.7)
 text = "If you enjoy playing this game, then you would love the real thing"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="ApplyTodayText" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 36
 theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Apply Today"
 horizontal_alignment = 1
+theme_override_constants/outline_size = 1
+theme_override_colors/font_outline_color = Color(1, 1, 1, 0.4)
 
 [node name="LogoButtonContainer" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
+theme_override_constants/separation = 16
 
 [node name="LogoButton" type="Button" parent="CenterContainer/VBoxContainer/LogoButtonContainer"]
 layout_mode = 2

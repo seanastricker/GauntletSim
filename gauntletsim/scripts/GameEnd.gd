@@ -150,7 +150,7 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	var name_label = Label.new()
 	name_label.text = other_name
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_font_size_override("font_size", 28)
 	name_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
 	entry_container.add_child(name_label)
 	
@@ -158,7 +158,7 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	var result_label = Label.new()
 	result_label.text = _get_result_text(other_outcome)
 	result_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	result_label.add_theme_font_size_override("font_size", 32)
+	result_label.add_theme_font_size_override("font_size", 28)
 	
 	match other_outcome:
 		"win":
@@ -177,8 +177,8 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	time_label.text = _format_time(other_time)
 	time_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	time_label.add_theme_font_size_override("font_size", 32)
-	time_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
+	time_label.add_theme_font_size_override("font_size", 28)
+	time_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 0.8))  # Secondary color with reduced opacity
 	entry_container.add_child(time_label)
 	
 	# Add to list

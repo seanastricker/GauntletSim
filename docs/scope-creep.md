@@ -1,5 +1,8 @@
 # Scope Creep Ideas
 
+## NPC Movement
+- NPCs just walk around in certain paths
+
 ## Player Interaction
 - players have a special skill that gives other players boosts
 - players can interact with other players, cool down
