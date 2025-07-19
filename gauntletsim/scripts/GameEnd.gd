@@ -3,6 +3,7 @@
 extends Control
 
 # UI component references
+@onready var background: TextureRect = $Background
 @onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var result_label: Label = $CenterContainer/VBoxContainer/ResultLabel
 @onready var time_label: Label = $CenterContainer/VBoxContainer/StatsContainer/TimeLabel
@@ -36,6 +37,9 @@ func _ready():
 	
 	# Connect logo button signal
 	logo_button.pressed.connect(_on_logo_button_pressed)
+	
+	# Setup gradient background
+	setup_gradient_background()
 	
 	# Connect to PlayerData signal for real-time updates
 	print("🔗 Connecting to PlayerData.player_result_added signal...")
@@ -108,16 +112,16 @@ func _update_player_display():
 	match player_outcome:
 		"win":
 			result_label.text = "🎉 You got a $200k job!"
-			result_label.add_theme_color_override("font_color", Color.GREEN)
+			result_label.add_theme_color_override("font_color", Color(0.0, 0.6, 0.0, 1.0))  # Dark green for contrast
 		"lose_ccat":
 			result_label.text = "❌ You have been kicked out!"
-			result_label.add_theme_color_override("font_color", Color.RED)
+			result_label.add_theme_color_override("font_color", Color(0.8, 0.0, 0.0, 1.0))  # Dark red for contrast
 		"lose_social":
 			result_label.text = "📄 You did not get a job offer"
-			result_label.add_theme_color_override("font_color", Color.ORANGE)
+			result_label.add_theme_color_override("font_color", Color(0.8, 0.4, 0.0, 1.0))  # Dark orange for contrast
 		_:
 			result_label.text = "🤔 Game ended"
-			result_label.add_theme_color_override("font_color", Color.WHITE)
+			result_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
 	
 	# Update time and stats
 	time_label.text = "Time Lasted: " + _format_time(time_lasted)
@@ -147,6 +151,7 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	name_label.text = other_name
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
 	entry_container.add_child(name_label)
 	
 	# Result with color
@@ -157,13 +162,13 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	
 	match other_outcome:
 		"win":
-			result_label.add_theme_color_override("font_color", Color.GREEN)
+			result_label.add_theme_color_override("font_color", Color(0.0, 0.6, 0.0, 1.0))  # Dark green for contrast
 		"lose_ccat":
-			result_label.add_theme_color_override("font_color", Color.RED)
+			result_label.add_theme_color_override("font_color", Color(0.8, 0.0, 0.0, 1.0))  # Dark red for contrast
 		"lose_social":
-			result_label.add_theme_color_override("font_color", Color.ORANGE)
+			result_label.add_theme_color_override("font_color", Color(0.8, 0.4, 0.0, 1.0))  # Dark orange for contrast
 		_:
-			result_label.add_theme_color_override("font_color", Color.WHITE)
+			result_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
 	
 	entry_container.add_child(result_label)
 	
@@ -173,6 +178,7 @@ func add_other_player_result(other_name: String, other_outcome: String, other_ti
 	time_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	time_label.add_theme_font_size_override("font_size", 32)
+	time_label.add_theme_color_override("font_color", Color(0.047, 0.137, 0.259, 1.0))  # Secondary color
 	entry_container.add_child(time_label)
 	
 	# Add to list
@@ -290,6 +296,34 @@ func _check_for_new_results():
 			add_other_player_result(result_player_name, result.outcome, result.time_lasted)
 		else:
 			print("🔄 Result for ", result_player_name, " already in UI")
+
+func setup_gradient_background():
+	"""Create and apply the company gradient background"""
+	print("🎨 Setting up gradient background...")
+	
+	# Create gradient with company colors (exact CSS values for light background)
+	var gradient = Gradient.new()
+	gradient.colors = PackedColorArray([
+		Color(0.039, 0.145, 0.251, 0.08),  # rgba(10, 37, 64, 0.05) - subtle overlay
+		Color(0.039, 1.0, 0.6, 0.12),      # rgba(10, 255, 153, 0.08) - subtle overlay
+		Color(0.0, 0.902, 1.0, 0.08)       # rgba(0, 230, 255, 0.05) - subtle overlay
+	])
+	gradient.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	
+	# Create gradient texture
+	var gradient_texture = GradientTexture2D.new()
+	gradient_texture.gradient = gradient
+	gradient_texture.width = 1280
+	gradient_texture.height = 720
+	gradient_texture.fill_from = Vector2(0.0, 0.0)      # Top-left
+	gradient_texture.fill_to = Vector2(1.0, 1.0)        # Bottom-right (135° diagonal)
+	
+	# Apply to background
+	background.texture = gradient_texture
+	background.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	
+	print("🎨 Gradient background applied successfully!")
 
 func _on_logo_button_pressed():
 	"""Handle clicking the logo button"""

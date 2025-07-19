@@ -1,7 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5n8g4iamxqwp"]
+[gd_scene load_steps=5 format=3 uid="uid://b5n8g4iamxqwp"]
 
 [ext_resource type="Script" path="res://scripts/GameEnd.gd" id="1_0xrms"]
 [ext_resource type="Texture2D" path="res://assets/ui/gauntlet-logo-final.png" id="3_logo"]
+
+
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_normal"]
 bg_color = Color(0.059, 1, 0.6, 1)
@@ -31,12 +33,19 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_0xrms")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="BackgroundBase" type="ColorRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.1, 0.1, 0.1, 1)
+color = Color(0.95, 0.95, 0.95, 1)
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+expand_mode = 1
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1
@@ -51,6 +60,7 @@ custom_minimum_size = Vector2(400, 0)
 [node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 72
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Game Over"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -71,12 +81,14 @@ layout_mode = 2
 [node name="TimeLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Time Lasted: 1:30"
 horizontal_alignment = 1
 
 [node name="FinalStatsLabel" type="Label" parent="CenterContainer/VBoxContainer/StatsContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Final Stats: Health 45, Social 30, CCAT 42"
 horizontal_alignment = 1
 
@@ -86,6 +98,7 @@ layout_mode = 2
 [node name="SpectatorLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Watching: PlayerName"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -96,6 +109,7 @@ layout_mode = 2
 [node name="OtherPlayersTitle" type="Label" parent="CenterContainer/VBoxContainer/OtherPlayersContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Other Players:"
 horizontal_alignment = 1
 
@@ -123,12 +137,14 @@ text = "Quit Game"
 [node name="PromotionalText" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "If you enjoy playing this game, then you would love the real thing"
 horizontal_alignment = 1
 
 [node name="ApplyTodayText" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.047, 0.137, 0.259, 1)
 text = "Apply Today"
 horizontal_alignment = 1
 
