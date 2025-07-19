@@ -4,6 +4,7 @@
 - players have a special skill that gives other players boosts
 - players can interact with other players, cool down
 - players can add each other on X when interacting
+- players can add NPCs on X
 
 ## Speech Bubbles
 - Pokemon style (in a box below the actual screen)

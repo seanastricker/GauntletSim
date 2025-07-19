@@ -96,4 +96,24 @@ text = "Play Again"
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 size_flags_horizontal = 3
-text = "Quit Game" 
+text = "Quit Game"
+
+[node name="PromotionalText" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "If you enjoy playing this game, then you would love the real thing"
+horizontal_alignment = 1
+
+[node name="ApplyTodayText" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Apply Today"
+horizontal_alignment = 1
+
+[node name="URLText" type="RichTextLabel" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 50)
+theme_override_font_sizes/normal_font_size = 32
+bbcode_enabled = true
+text = "[center][url=https://www.gauntletai.com]https://www.gauntletai.com[/url][/center]"
+fit_content = true

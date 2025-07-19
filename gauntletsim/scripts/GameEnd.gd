@@ -9,6 +9,7 @@ extends Control
 @onready var final_stats_label: Label = $CenterContainer/VBoxContainer/StatsContainer/FinalStatsLabel
 @onready var spectator_label: Label = $CenterContainer/VBoxContainer/SpectatorLabel
 @onready var other_players_list: VBoxContainer = $CenterContainer/VBoxContainer/OtherPlayersContainer/OtherPlayersList
+@onready var url_text: RichTextLabel = $CenterContainer/VBoxContainer/URLText
 @onready var play_again_button: Button = $CenterContainer/VBoxContainer/ButtonContainer/PlayAgainButton
 @onready var quit_button: Button = $CenterContainer/VBoxContainer/ButtonContainer/QuitButton
 
@@ -32,6 +33,9 @@ func _ready():
 	# Connect button signals
 	play_again_button.pressed.connect(_on_play_again_pressed)
 	quit_button.pressed.connect(_on_quit_pressed)
+	
+	# Connect URL link signal
+	url_text.meta_clicked.connect(_on_url_clicked)
 	
 	# Connect to PlayerData signal for real-time updates
 	print("🔗 Connecting to PlayerData.player_result_added signal...")
@@ -285,4 +289,12 @@ func _check_for_new_results():
 			print("🔄 Found NEW result for: ", result_player_name, " - ", result.outcome)
 			add_other_player_result(result_player_name, result.outcome, result.time_lasted)
 		else:
-			print("🔄 Result for ", result_player_name, " already in UI") 
+			print("🔄 Result for ", result_player_name, " already in UI")
+
+func _on_url_clicked(meta: String):
+	"""Handle clicking the URL link"""
+	print("🔗 URL clicked: ", meta)
+	
+	# Open the URL in the default browser
+	OS.shell_open(meta)
+	print("🔗 Opened URL in browser: ", meta) 
