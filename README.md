@@ -12,7 +12,7 @@ GauntletSim is a social life simulation RPG with real-time multiplayer support. 
 
 ### Key Features
 
-- **Real-time Multiplayer**: Support for 2-10 concurrent players
+- **Real-time Multiplayer**: Support for 1-10 concurrent players
 - **Stat Management System**: Balance Health, Social, and CCAT Score with meaningful trade-offs
 - **Dynamic Environment**: Multiple locations including office, apartments, restaurants, gym, and parks
 - **Character Customization**: Choose from various character sprites and customize your appearance
@@ -82,8 +82,7 @@ cd GauntletSim
 
 ## 🏗️ Development Status
 
-The project is currently in **Phase 1: Single-Player Foundation** focusing on:
-
+**Phase 1: Single-Player Foundation**
 - ✅ Basic player movement and animation
 - ✅ Office scene implementation
 - ✅ Core stat system (0-50 range)
@@ -91,20 +90,18 @@ The project is currently in **Phase 1: Single-Player Foundation** focusing on:
 - ✅ Character creation and sprite selection
 - ✅ Interaction system with cooldowns
 - ✅ UI for stat display
-- 🔄 Depth levels implementation
-
-### Roadmap
 
 **Phase 2: Content Expansion**
-- Win/Lose Logic with World Timer
+- ✅ Win/Lose Logic with World Timer
 - Additional locations (Apartment, Bar, Gym, Park)
 - More activities and interactions
 - Enhanced UI and feedback
+- Depth levels implementation
 
 **Phase 3: Multiplayer Integration**
-- Real-time player synchronization
+- ✅ Real-time player synchronization
+- ✅ Shared world spaces
 - Chat system
-- Shared world spaces
 
 **Phase 4: Polish & Optimization**
 - Performance optimization for 10 players
@@ -136,7 +133,6 @@ This project uses premium assets from:
 
 ## 🐛 Known Issues
 
-- Multiplayer functionality not yet implemented
 - Limited to office location in current build
 - Stat decay rates need balancing
 - Activity cooldown timers require fine-tuning
