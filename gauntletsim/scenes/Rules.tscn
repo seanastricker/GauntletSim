@@ -1,0 +1,271 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4vbqk3xh2y8t"]
+
+[ext_resource type="Script" path="res://scripts/Rules.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://oq48gi4ymvwu" path="res://assets/ui/character_creation_background.png" id="2"]
+
+[node name="Rules" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2")
+expand_mode = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 80.0
+offset_top = 500.0
+offset_right = -80.0
+offset_bottom = -140.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "GAME RULES"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MainContentPanel" type="PanelContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="ObjectiveLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "OBJECTIVE"
+horizontal_alignment = 1
+
+[node name="ObjectiveText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "Navigate the city and manage your character's three core stats through various activities. Make strategic decisions about how to spend your time!"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatsLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "YOUR STATS"
+horizontal_alignment = 1
+
+[node name="StatsHBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="HealthVBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HealthText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/HealthVBoxContainer"]
+layout_mode = 2
+text = "Health (0-50): Your physical and mental wellbeing"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="HealthDecayText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/HealthVBoxContainer"]
+layout_mode = 2
+text = "Decay Rate of other stats triple when Health reaches 0"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="SocialVBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="SocialText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/SocialVBoxContainer"]
+layout_mode = 2
+text = "Social (0-50): Your relationships and social connections"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="SocialJobText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/SocialVBoxContainer"]
+layout_mode = 2
+text = "Must have 25+ Social by end of game to get job offer"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="CCATVBoxContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CCATText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/CCATVBoxContainer"]
+layout_mode = 2
+text = "CCAT Score (0-50): Your cognitive abilities and work performance"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="CCATKickText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/StatsHBoxContainer/CCATVBoxContainer"]
+layout_mode = 2
+text = "Must maintain 40+ CCAT Score throughout game or be kicked out"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="HSeparator3" type="HSeparator" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ControlsLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "HOW TO PLAY"
+horizontal_alignment = 1
+
+[node name="ControlsHBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ArrowKeysText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/ControlsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Use Arrow Keys to move around"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="InteractText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/ControlsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Press E when near objects or NPCs to interact"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="DoorsText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/ControlsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Walk up to doors to enter different locations"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="HSeparator4" type="HSeparator" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MechanicsLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "IMPORTANT MECHANICS"
+horizontal_alignment = 1
+
+[node name="MechanicsHBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatDecayText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MechanicsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Stat Decay: All stats naturally decrease over time"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="TradeOffsText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MechanicsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Trade-offs: Many activities help one stat but hurt others"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="CooldownsText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MechanicsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cooldowns: Activities have cooldown periods to prevent spam"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="HSeparator5" type="HSeparator" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LocationsLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "LOCATIONS"
+horizontal_alignment = 1
+
+[node name="LocationsHBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="OfficeText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/LocationsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Office: Activities to increase each of the three stats"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="StreetText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/LocationsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Street: Includes the ability to enter multiple locations"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="MoreLocationsText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/LocationsHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "More locations coming soon!"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="HSeparator6" type="HSeparator" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MultiplayerLabel" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+text = "MULTIPLAYER"
+horizontal_alignment = 1
+
+[node name="MultiplayerHBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="SeePlayersText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MultiplayerHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "See other players in real-time"
+autowrap_mode = 3
+horizontal_alignment = 0
+
+[node name="LeaderboardText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MultiplayerHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "See real-time leaderboard of other players' results"
+autowrap_mode = 3
+horizontal_alignment = 1
+
+[node name="NoCompetitionText" type="Label" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer/MultiplayerHBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Activities are individual - no competition!"
+autowrap_mode = 3
+horizontal_alignment = 2
+
+[node name="BottomSpacer" type="Control" parent="ScrollContainer/VBoxContainer/MainContentPanel/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 30)
+
+
+
+[node name="BackButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 30.0
+offset_top = -120.0
+offset_right = 450.0
+offset_bottom = -30.0
+grow_vertical = 0
+text = "◀ Back to Character Selection" 

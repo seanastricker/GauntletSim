@@ -9,6 +9,7 @@
 
 ## NPC AI chats
 - NPCs talk like they would in real life (AI - RAG)
+- Send out google form to gather people's personalities / photos to add as NPCs
 
 ## Player Interaction
 - players have a special skill that gives other players boosts

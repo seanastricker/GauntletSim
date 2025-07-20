@@ -3,6 +3,7 @@ extends Control
 
 @onready var name_edit: LineEdit = $CenterContainer/VBoxContainer/NameEdit
 @onready var start_button: Button = $CenterContainer/VBoxContainer/StartButton
+@onready var help_button: Button = $CenterContainer/VBoxContainer/HelpButton
 @onready var texture_rect: TextureRect = $CenterContainer/VBoxContainer/HBoxContainer/TextureRect
 @onready var previous_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/PreviousButton
 @onready var next_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/NextButton
@@ -41,6 +42,7 @@ func _ready():
 		print("🧹 CharacterCreation: No multiplayer connections to clean up")
 	
 	start_button.pressed.connect(_on_start_button_pressed)
+	help_button.pressed.connect(_on_help_button_pressed)
 	previous_button.pressed.connect(_on_previous_button_pressed)
 	next_button.pressed.connect(_on_next_button_pressed)
 	name_edit.grab_focus()
@@ -146,6 +148,19 @@ func setup_sexy_ui():
 	start_button.add_theme_stylebox_override("focus", button_stylebox_focus)  # Remove ugly focus outline
 	start_button.add_theme_color_override("font_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text
 	start_button.add_theme_color_override("font_hover_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text on hover
+
+	# === APPLY SAME STYLING TO RULES BUTTON ===
+	help_button.add_theme_font_size_override("font_size", 28)
+	help_button.add_theme_font_override("font", bold_font)
+	help_button.add_theme_stylebox_override("normal", button_stylebox)
+	help_button.add_theme_stylebox_override("hover", button_stylebox_hover)
+	help_button.add_theme_stylebox_override("pressed", button_stylebox_pressed)
+	help_button.add_theme_stylebox_override("focus", button_stylebox_focus)  # Remove ugly focus outline
+	help_button.add_theme_color_override("font_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text
+	help_button.add_theme_color_override("font_hover_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text on hover
+	help_button.add_theme_color_override("font_pressed_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text when pressed
+	help_button.add_theme_color_override("font_focus_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text when focused
+	
 	start_button.add_theme_color_override("font_pressed_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text when pressed
 	start_button.add_theme_color_override("font_focus_color", Color(0.0, 0.0, 0.0, 1.0))  # Black text when focused
 	start_button.add_theme_color_override("font_disabled_color", Color(0.3, 0.3, 0.3, 1.0))  # Dark gray when disabled
@@ -404,3 +419,31 @@ func update_character_sprite():
 	
 	# Add character counter feedback
 	print("Character " + str(current_sprite_index + 1) + "/" + str(character_sprites.size()) + " selected!")
+
+func _on_help_button_pressed():
+	"""Handle help button press and navigate to rules screen"""
+	print("📖 CharacterCreation: Opening rules screen")
+	
+	# Add button press animation
+	animate_help_button_press()
+	
+	# Brief delay for visual feedback
+	await get_tree().create_timer(0.2).timeout
+	
+	# Navigate to rules scene
+	get_tree().change_scene_to_file("res://scenes/Rules.tscn")
+
+func animate_help_button_press():
+	"""Animate help button press for visual feedback"""
+	help_button.disabled = true
+	
+	var press_tween = create_tween()
+	press_tween.tween_method(
+		func(scale): help_button.scale = Vector2(scale, scale),
+		1.0, 0.95, 0.1
+	).set_ease(Tween.EASE_OUT)
+	
+	press_tween.tween_method(
+		func(scale): help_button.scale = Vector2(scale, scale),
+		0.95, 1.0, 0.1
+	).set_ease(Tween.EASE_IN)
