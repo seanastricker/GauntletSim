@@ -54,3 +54,9 @@
 ## Add browser support
 - single player (no hosting needed)
 - Multiplayer support
+
+## NPCs to add
+- Uncle Chris
+- Ghost Story Tour
+- Unhoused individuals
+- Street Preacher

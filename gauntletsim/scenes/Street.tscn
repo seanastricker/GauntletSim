@@ -1,0 +1,96 @@
+[gd_scene load_steps=9 format=3 uid="uid://bfg8q881wx2h"]
+
+[ext_resource type="Texture2D" uid="uid://bqwg77u10o8go" path="res://assets/Street_Design_1.png" id="1"]
+[ext_resource type="Script" uid="uid://c6026skoj11lm" path="res://scripts/StreetSceneManager.gd" id="2"]
+[ext_resource type="Script" uid="uid://vmhipl47hq2t" path="res://scripts/OfficeEntrance.gd" id="3"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Top"]
+size = Vector2(1075.5, 559)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Bottom"]
+size = Vector2(1052.5, 163)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Left"]
+size = Vector2(50, 401.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Right"]
+size = Vector2(21, 795)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_Entrance"]
+size = Vector2(134, 101)
+
+[node name="Street" type="Node2D"]
+
+[node name="StreetBackground" type="Sprite2D" parent="."]
+texture = ExtResource("1")
+
+[node name="Boundaries" type="Node2D" parent="."]
+
+[node name="TopWall" type="StaticBody2D" parent="Boundaries"]
+position = Vector2(200, 10)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/TopWall"]
+position = Vector2(-201.75, -203.5)
+shape = SubResource("RectangleShape2D_Top")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="BottomWall" type="StaticBody2D" parent="Boundaries"]
+position = Vector2(200, 390)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/BottomWall"]
+position = Vector2(-203.25, -3.5)
+shape = SubResource("RectangleShape2D_Bottom")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="LeftWall" type="StaticBody2D" parent="Boundaries"]
+position = Vector2(10, 200)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/LeftWall"]
+position = Vector2(-551, 71)
+shape = SubResource("RectangleShape2D_Left")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="RightWall" type="StaticBody2D" parent="Boundaries"]
+position = Vector2(390, 200)
+collision_layer = 2
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/RightWall"]
+position = Vector2(133.5, -276.5)
+shape = SubResource("RectangleShape2D_Right")
+debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(1.2, 1.2)
+
+[node name="StreetSceneManager" type="Node2D" parent="."]
+script = ExtResource("2")
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="StreetSceneManager"]
+_spawnable_scenes = PackedStringArray("uid://1g8gtj3oe582")
+spawn_path = NodePath(".")
+spawn_limit = 10
+
+[node name="OfficeEntrance" type="Area2D" parent="."]
+position = Vector2(50, 300)
+script = ExtResource("3")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="OfficeEntrance"]
+position = Vector2(208, -157.5)
+shape = SubResource("RectangleShape2D_Entrance")
+
+[node name="InteractionPrompt" type="Label" parent="OfficeEntrance"]
+visible = false
+offset_left = -50.0
+offset_top = -40.0
+offset_right = 50.0
+offset_bottom = -10.0
+text = "Press E to enter Office"
+horizontal_alignment = 1
+vertical_alignment = 1
