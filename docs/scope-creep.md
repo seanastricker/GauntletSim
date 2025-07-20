@@ -44,9 +44,7 @@
 - include total number of players and reduce count when people are kicked out (pile of bones reference?)
 
 ## Report Bug Feature
-- look at portal.gauntlet
-
-## Multiplayer browser support
+- look at portal.gauntlet for how they do it
 
 ## Spectating after elimination
 
