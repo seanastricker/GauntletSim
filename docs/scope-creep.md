@@ -45,3 +45,5 @@
 
 ## Report Bug Feature
 - look at portal.gauntlet
+
+## Multiplayer browser support

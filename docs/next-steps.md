@@ -1,7 +1,5 @@
 # Next Steps
 
-## End of Game
-- UI improvements
-## Build to itch.io
+## Go back button / fix "play again"
 ## Remove eliminated player sprites (avoid blocking)
 ## Spectating after elimination

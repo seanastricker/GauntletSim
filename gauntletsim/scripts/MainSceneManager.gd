@@ -210,21 +210,18 @@ func _on_server_disconnected():
 # === GAME TIMER SYSTEM ===
 
 func setup_game_timer():
-	"""Initialize the game timer system"""
-	if multiplayer.is_server():
-		print("🕒 Server: Setting up game timer for ", GAME_DURATION, " seconds")
-		
-		# Create and configure timer
-		game_timer = Timer.new()
-		game_timer.wait_time = 1.0  # Update every second
-		game_timer.autostart = false
-		game_timer.timeout.connect(_on_game_timer_tick)
-		add_child(game_timer)
-		
-		# Start timer after players spawn
-		call_deferred("start_game_timer")
-	else:
-		print("🕒 Client: Waiting for timer updates from server")
+	"""Initialize the game timer system - runs on ALL players independently"""
+	print("🕒 Setting up LOCAL game timer for ", GAME_DURATION, " seconds")
+	
+	# Everyone runs their own timer - no host dependency!
+	game_timer = Timer.new()
+	game_timer.wait_time = 1.0  # Update every second
+	game_timer.autostart = false
+	game_timer.timeout.connect(_on_game_timer_tick)
+	add_child(game_timer)
+	
+	# Start timer after players spawn
+	call_deferred("start_game_timer")
 
 func setup_timer_ui():
 	"""Create timer display UI with proper anchoring and container box"""
@@ -347,14 +344,15 @@ func get_game_end_window() -> Control:
 	return game_end_window
 
 func start_game_timer():
-	"""Start the game timer (server only)"""
-	if multiplayer.is_server() and not is_game_active and not game_ended:
-		print("🚀 Starting game timer!")
+	"""Start the game timer (all players)"""
+	if not is_game_active and not game_ended:
+		print("🚀 Starting LOCAL game timer!")
 		is_game_active = true
 		game_timer.start()
 		
-		# Notify all clients that game has started
-		game_started.rpc()
+		# Only server notifies clients that game has started (for UI sync)
+		if multiplayer.is_server():
+			game_started.rpc()
 
 @rpc("authority", "reliable")
 func game_started():
@@ -363,27 +361,20 @@ func game_started():
 	print("🎮 Game started notification received!")
 
 func _on_game_timer_tick():
-	"""Handle timer tick (server only)"""
-	if not multiplayer.is_server() or game_ended:
+	"""Handle timer tick - runs on ALL players independently"""
+	if game_ended:
 		return
 	
 	game_time_remaining -= 1.0
 	
-	# Update server's own timer display
+	# Update local timer display
 	update_timer_display()
 	
-	# Sync timer to all clients
-	sync_timer.rpc(game_time_remaining)
-	
-	# Check if time is up
+	# Check if time is up locally
 	if game_time_remaining <= 0.0:
 		end_game()
 
-@rpc("authority", "reliable")
-func sync_timer(time_remaining: float):
-	"""Sync timer from server to clients"""
-	game_time_remaining = time_remaining
-	update_timer_display()
+
 
 func update_timer_display():
 	"""Update the timer UI display"""
@@ -413,24 +404,14 @@ func end_game():
 	game_ended = true
 	is_game_active = false
 	
-	if multiplayer.is_server():
+	# Stop local timer
+	if game_timer:
 		game_timer.stop()
 	
-	# Notify all clients that game has ended and trigger evaluation
-	game_ended_notification.rpc()
-	
-	# Evaluate win/lose conditions for all players (on all clients)
+	# Evaluate win/lose conditions locally
 	call_deferred("evaluate_all_players")
 
-@rpc("authority", "reliable")
-func game_ended_notification():
-	"""Notify clients that the game has ended"""
-	game_ended = true
-	is_game_active = false
-	print("🏁 Game ended notification received!")
-	
-	# Trigger evaluation on clients too
-	call_deferred("evaluate_all_players")
+
 
 func evaluate_all_players():
 	"""Evaluate win/lose conditions for all players"""
