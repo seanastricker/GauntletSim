@@ -47,3 +47,11 @@
 - look at portal.gauntlet
 
 ## Multiplayer browser support
+
+## Spectating after elimination
+
+## Ability to leave mid-game (except for host? or allow transfer of host?)
+
+## Add browser support
+- single player (no hosting needed)
+- Multiplayer support
