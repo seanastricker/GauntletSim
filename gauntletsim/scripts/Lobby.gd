@@ -34,8 +34,8 @@ func _ready():
 	multiplayer.server_disconnected.connect(_on_server_disconnected)
 	print("🎮 Multiplayer signals connected!")
 	
-	status_label.text = "Choose Host or Join"
-	ip_input.placeholder_text = "localhost"
+	status_label.text = "Local Network: Use host's local IP (192.168.x.x) | Internet: Use public IP"
+	ip_input.placeholder_text = "Local: 192.168.1.xxx | Internet: public IP"
 	
 	# Apply modern UI styling
 	setup_modern_ui()
@@ -274,7 +274,8 @@ func _on_host_pressed():
 	if error == OK:
 		print("🏠 Server created successfully!")
 		multiplayer.multiplayer_peer = multiplayer_peer
-		status_label.text = "Hosting on port " + str(DEFAULT_PORT)
+		var local_ip = get_local_ip()
+		status_label.text = "Hosting on port " + str(DEFAULT_PORT) + "\n🏠 LOCAL NETWORK: Share this IP → " + local_ip + "\n🌐 INTERNET: Share your public IP + port forward 7000"
 		start_game_button.visible = true
 		host_button.disabled = true
 		join_button.disabled = true
@@ -291,18 +292,34 @@ func _on_host_pressed():
 
 func _on_join_pressed():
 	"""Join an existing multiplayer game"""
-	var ip = ip_input.text if ip_input.text else "localhost"
+	var ip = ip_input.text.strip_edges() if ip_input.text else "localhost"
+	
+	# Validate IP address format
+	if ip == "" or ip == "localhost":
+		status_label.text = "Please enter the host's IP address!\nLocal network: 192.168.x.x | Same computer: 127.0.0.1"
+		return
+	
 	multiplayer_peer = ENetMultiplayerPeer.new()
 	var error = multiplayer_peer.create_client(ip, DEFAULT_PORT)
 	
 	if error == OK:
 		multiplayer.multiplayer_peer = multiplayer_peer
-		status_label.text = "Connecting to " + ip + "..."
+		var connection_msg = "Connecting to " + ip + "..."
+		if ip.begins_with("192.168.") or ip.begins_with("10."):
+			connection_msg += "\nLocal network connection - no port forwarding needed!"
+		else:
+			connection_msg += "\nInternet connection - host needs port forwarding!"
+		status_label.text = connection_msg
 		host_button.disabled = true
 		join_button.disabled = true
 		ip_input.editable = false
 	else:
-		status_label.text = "Failed to connect: " + str(error)
+		var error_msg = "Failed to connect to " + ip
+		if ip.begins_with("192.168.") or ip.begins_with("10."):
+			error_msg += "\nCheck: Same WiFi network? Host running game?"
+		else:
+			error_msg += "\nCheck: IP address? Host's port forwarding?"
+		status_label.text = error_msg
 
 func _on_start_game_pressed():
 	"""Host starts the game for all players"""
@@ -341,7 +358,7 @@ func _on_connected_to_server():
 
 func _on_connection_failed():
 	"""Called when connection to server fails"""
-	status_label.text = "Connection failed!"
+	status_label.text = "Connection failed!\nLocal network: Check same WiFi + host running\nInternet: Check IP + port forwarding + firewall"
 	reset_lobby_ui()
 
 func _on_server_disconnected():
@@ -357,13 +374,31 @@ func _on_server_disconnected():
 	await get_tree().create_timer(2.0).timeout
 	reset_lobby_ui()
 
+func get_local_ip() -> String:
+	"""Get the local IP address for local network play"""
+	# Try to get local IP addresses
+	var local_addresses = IP.get_local_addresses()
+	
+	# Look for a typical local network IP (192.168.x.x or 10.x.x.x)
+	for ip in local_addresses:
+		if ip.begins_with("192.168.") or ip.begins_with("10."):
+			return ip
+	
+	# Fallback to first non-localhost IP
+	for ip in local_addresses:
+		if ip != "127.0.0.1" and not ip.begins_with("::"):
+			return ip
+	
+	# Final fallback
+	return "127.0.0.1"
+
 func reset_lobby_ui():
 	"""Reset the lobby UI to initial state"""
 	host_button.disabled = false
 	join_button.disabled = false
 	ip_input.editable = true
 	start_game_button.visible = false
-	status_label.text = "Choose Host or Join"
+	status_label.text = "Local Network: Use host's local IP (192.168.x.x) | Internet: Use public IP"
 	players_list.clear()
 	
 	# Close multiplayer connection
