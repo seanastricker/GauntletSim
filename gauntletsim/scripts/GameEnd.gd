@@ -217,9 +217,20 @@ func _on_play_again_pressed():
 	"""Handle Play Again button press"""
 	print("🔄 Play Again button pressed")
 	
+	# CRITICAL FIX: Clean up multiplayer connections to prevent "Failed to host: 20" error
+	print("🧹 Cleaning up multiplayer connections...")
+	if multiplayer.has_multiplayer_peer():
+		print("🧹 Closing active multiplayer peer...")
+		multiplayer.multiplayer_peer.close()
+		multiplayer.multiplayer_peer = null
+		print("🧹 Multiplayer peer closed successfully")
+	else:
+		print("🧹 No active multiplayer peer found")
+	
 	# Clear all game data before starting over
 	PlayerData.clear_all_player_results()
 	PlayerData.clear_game_end_data()
+	PlayerData.clear_player_registry()  # CRITICAL: Clear multiplayer registry to prevent duplicates
 	print("🧹 Cleared all game data for new game")
 	
 	# Return to character creation scene

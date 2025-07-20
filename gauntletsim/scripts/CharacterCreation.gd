@@ -28,7 +28,17 @@ func _ready():
 	# Clear any previous game data when returning to character creation
 	PlayerData.clear_all_player_results()
 	PlayerData.clear_game_end_data()
+	PlayerData.clear_player_registry()  # CRITICAL: Clear multiplayer registry to prevent duplicates
 	print("🧹 CharacterCreation: Cleared all previous game data")
+	
+	# SAFETY: Clean up any lingering multiplayer connections
+	if multiplayer.has_multiplayer_peer():
+		print("🧹 CharacterCreation: Cleaning up lingering multiplayer connection...")
+		multiplayer.multiplayer_peer.close()
+		multiplayer.multiplayer_peer = null
+		print("🧹 CharacterCreation: Multiplayer cleanup complete")
+	else:
+		print("🧹 CharacterCreation: No multiplayer connections to clean up")
 	
 	start_button.pressed.connect(_on_start_button_pressed)
 	previous_button.pressed.connect(_on_previous_button_pressed)

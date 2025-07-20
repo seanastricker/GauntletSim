@@ -141,6 +141,14 @@ func clear_all_player_results():
     print("📊 PlayerData: AFTER clearing - Results count: ", all_player_results.size())
     print("📊 PlayerData: All player results cleared successfully")
 
+func clear_player_registry():
+    """Clear the multiplayer player registry"""
+    print("🧹 PlayerData: BEFORE clearing registry - Registry size: ", players_data.size())
+    print("🧹 Previous registry: ", players_data)
+    players_data.clear()
+    print("🧹 PlayerData: AFTER clearing registry - Registry size: ", players_data.size())
+    print("🧹 PlayerData: Player registry cleared successfully")
+
 func remove_player(peer_id: int):
     """Remove a player from the registry"""
     if peer_id in players_data:

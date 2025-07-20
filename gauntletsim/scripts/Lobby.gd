@@ -325,6 +325,7 @@ func _on_back_pressed():
 	
 	# Clear multiplayer data to start fresh
 	PlayerData.clear_all_player_results()
+	PlayerData.clear_player_registry()  # CRITICAL: Clear multiplayer registry to prevent duplicates
 	print("🧹 Cleared multiplayer data for return to character creation")
 	
 	# Return to character creation scene
@@ -335,8 +336,8 @@ func _on_connected_to_server():
 	status_label.text = "Connected! Waiting for game to start..."
 	send_player_data.rpc_id(1, PlayerData.player_name, PlayerData.player_sprite_path)
 	
-	# Request current player list from server
-	request_player_list.rpc_id(1)
+	# Note: send_player_data already triggers broadcast_player_list on server
+	# No need to request_player_list separately - this was causing duplicates
 
 func _on_connection_failed():
 	"""Called when connection to server fails"""
@@ -424,7 +425,7 @@ func update_player_list(player_data_list: Array):
 	"""Receive updated player list from server"""
 	print("📋 Received player list update: ", player_data_list)
 	
-	# Clear current list
+	# Clear current list and rebuild from server data
 	players_list.clear()
 	
 	# Add all players from the updated list
