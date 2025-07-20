@@ -23,6 +23,7 @@ var game_end_ccat: int = 0
 # All players' results for GameEnd scene
 var all_player_results: Dictionary = {}
 signal player_result_added(player_name: String, outcome: String, time_lasted: float)
+signal player_eliminated(player_name: String, peer_id: int)
 
 func register_player(peer_id: int, display_name: String, sprite_path: String):
     """Register a player's data for multiplayer synchronization"""
@@ -128,10 +129,15 @@ func get_all_player_results() -> Dictionary:
     return all_player_results
 
 @rpc("any_peer", "call_local", "reliable")
-func sync_player_result_across_scenes(player_name: String, outcome: String, time_lasted: float):
+func sync_player_result_across_scenes(player_name: String, outcome: String, time_lasted: float, eliminated_peer_id: int = -1):
     """RPC to sync player results across all scenes (including GameEnd.tscn)"""
     print("🌐 PlayerData RPC RECEIVED: ", player_name, " - ", outcome, " (", time_lasted, "s)")
     add_player_result(player_name, outcome, time_lasted)
+    
+    # Emit elimination signal if this is an elimination (not a game end)
+    if eliminated_peer_id != -1 and (outcome == "lose_ccat" or outcome == "lose_social"):
+        print("🚨 Emitting player_eliminated signal for ", player_name, " (peer ", eliminated_peer_id, ")")
+        player_eliminated.emit(player_name, eliminated_peer_id)
 
 func clear_all_player_results():
     """Clear all player results"""

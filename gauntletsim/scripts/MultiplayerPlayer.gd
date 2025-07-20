@@ -122,6 +122,12 @@ func initialize_player_with_id(id: int):
 	# Connect to player registry updates to refresh names if needed
 	if not PlayerData.player_registry_updated.is_connected(_on_player_registry_updated):
 		PlayerData.player_registry_updated.connect(_on_player_registry_updated)
+	
+	# Connect to player elimination signal to hide eliminated players
+	if not PlayerData.player_eliminated.is_connected(_on_player_eliminated):
+		PlayerData.player_eliminated.connect(_on_player_eliminated)
+		print("🔌 Connected to PlayerData.player_eliminated signal for peer ", peer_id)
+	
 	call_deferred("setup_notification_ui")
 	
 	# Setup systems
@@ -484,6 +490,30 @@ func _on_player_registry_updated():
 			if name_label:
 				name_label.text = player_name
 				print("✅ Name label refreshed to: '", name_label.text, "' for peer ", peer_id)
+
+func _on_player_eliminated(eliminated_player_name: String, eliminated_peer_id: int):
+	"""Called when any player gets eliminated - hide eliminated players"""
+	print("🚨 ELIMINATION SIGNAL RECEIVED - Player: ", eliminated_player_name, " (peer ", eliminated_peer_id, ")")
+	print("🚨 This player peer_id: ", peer_id, " | Is this the eliminated player? ", peer_id == eliminated_peer_id)
+	
+	# If this is the eliminated player's sprite (on other players' screens), hide it
+	if peer_id == eliminated_peer_id:
+		print("🚨 Hiding eliminated player sprite for peer ", peer_id, " (", player_name, ")")
+		
+		# Hide the sprite completely
+		visible = false
+		print("🚨 Hidden sprite for eliminated player ", player_name)
+		
+		# Disable collision to prevent blocking movement
+		set_collision_layer(0)
+		set_collision_mask(0)
+		print("🚨 Disabled collision for eliminated player ", player_name)
+		
+		# Disable physics processing to save performance
+		set_physics_process(false)
+		print("🚨 Disabled physics for eliminated player ", player_name)
+	else:
+		print("🚨 Not hiding - this is not the eliminated player's sprite")
 
 func resize_ui_containers():
 	"""Resize the UI containers to accommodate larger progress bars"""
@@ -942,7 +972,7 @@ func eliminate_player(outcome: String, message: String):
 	
 	# Sync elimination to all clients via PlayerData singleton (persists across scenes)
 	print("📡 Calling PlayerData.sync_player_result_across_scenes.rpc for ", player_name)
-	PlayerData.sync_player_result_across_scenes.rpc(player_name, outcome, time_lasted)
+	PlayerData.sync_player_result_across_scenes.rpc(player_name, outcome, time_lasted, peer_id)
 	print("📡 PlayerData RPC call completed")
 	
 	# Stop decay timer

@@ -1,5 +1,9 @@
 # Scope Creep Ideas
 
+## Locations
+- more locations (Speakeasy, street, Placemakr, Barton Springs, etc.)
+- enhance office space (convert to tile map, make bigger, look like our actual office)
+
 ## NPC Movement
 - NPCs just walk around in certain paths
 
@@ -31,10 +35,6 @@
 
 ## Player appearance
 - removing smoothing effect for better graphics
-
-## Restarting New Game
-- failed to host
-- Kept Matt from previous game
 
 ## Music
 - different music for different places
