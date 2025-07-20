@@ -2,6 +2,7 @@
 # Handles hosting and joining multiplayer games
 extends Control
 
+@onready var back_button: Button = $CenterContainer/VBoxContainer/BackButton
 @onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var host_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/HostButton
 @onready var join_button: Button = $CenterContainer/VBoxContainer/HBoxContainer/JoinButton
@@ -18,6 +19,7 @@ func _ready():
 	print("🎮 Lobby _ready() function called!")
 	
 	print("🎮 Connecting button signals...")
+	back_button.pressed.connect(_on_back_pressed)
 	host_button.pressed.connect(_on_host_pressed)
 	join_button.pressed.connect(_on_join_pressed)
 	start_game_button.pressed.connect(_on_start_game_pressed)
@@ -54,6 +56,9 @@ func setup_modern_ui():
 	
 	# Define background color for text boxes
 	var text_box_bg_color = Color(0.953, 0.690, 0.416, 1.0)  # #F3B06A
+	
+	# === BACK BUTTON STYLING ===
+	style_button(back_button, "◀ Back to Character Selection", 24, primary_color, secondary_color, black_border, black_text, bold_font)
 	
 	# === TITLE LABEL STYLING ===
 	style_label(title_label, 36, black_text, bold_font, text_box_bg_color, black_border)
@@ -308,6 +313,22 @@ func _on_start_game_pressed():
 		start_game.rpc()
 	else:
 		print("🎮 Not server - ignoring button press")
+
+func _on_back_pressed():
+	"""Handle back button press - return to character creation"""
+	print("🔙 Back button pressed - returning to Character Creation")
+	
+	# Clean up any active multiplayer connections
+	if multiplayer_peer:
+		multiplayer_peer.close()
+	multiplayer.multiplayer_peer = null
+	
+	# Clear multiplayer data to start fresh
+	PlayerData.clear_all_player_results()
+	print("🧹 Cleared multiplayer data for return to character creation")
+	
+	# Return to character creation scene
+	get_tree().change_scene_to_file("res://scenes/CharacterCreation.tscn")
 
 func _on_connected_to_server():
 	"""Called when successfully connected to server as client"""
