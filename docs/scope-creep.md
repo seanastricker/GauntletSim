@@ -3,6 +3,9 @@
 ## NPC Movement
 - NPCs just walk around in certain paths
 
+## NPC AI chats
+- NPCs talk like they would in real life (AI - RAG)
+
 ## Player Interaction
 - players have a special skill that gives other players boosts
 - players can interact with other players, cool down
