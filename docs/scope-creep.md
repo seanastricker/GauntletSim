@@ -2,7 +2,7 @@
 
 ## Locations
 - change images to tilemaps
-- more locations (Speakeasy, street, Placemakr, Barton Springs, etc.)
+- more locations (Speakeasy, Placemakr, Barton Springs, etc.)
 - enhance office space (convert to tile map, make bigger, look like our actual office)
 
 ## NPC Movement
@@ -64,3 +64,10 @@
 
 ## Scalability
 - Dedicated servers (50+ per lobby, 1000+ total) (32 theoretical limit for Godot)
+
+## Scale out to entirety of Austin
+- target audience needs to be more than just Gauntlet
+- maybe each building is a different kind of mini-game
+- each mini-game would still be based around 3 core stats, but the objective might differ
+- for example, going into a bar, the objective might be to pick up a date
+- for example, going to the gym, the objective might be to increase PR
