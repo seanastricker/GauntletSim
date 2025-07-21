@@ -1,6 +1,7 @@
 # Scope Creep Ideas
 
 ## Locations
+- change images to tilemaps
 - more locations (Speakeasy, street, Placemakr, Barton Springs, etc.)
 - enhance office space (convert to tile map, make bigger, look like our actual office)
 
@@ -34,9 +35,6 @@
 ## Levels of Winning
 - if you have higher social/CCAT score, your job offer is more than $200k (based on some scale)
 
-## Player appearance
-- removing smoothing effect for better graphics
-
 ## Music
 - different music for different places
 
@@ -60,3 +58,6 @@
 - Ghost Story Tour
 - Unhoused individuals
 - Street Preacher
+
+## Scalability
+- Dedicated servers (50+ per lobby, 1000+ total) (32 theoretical limit for Godot)

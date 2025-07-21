@@ -962,59 +962,18 @@ func eliminate_player(outcome: String, message: String):
 	
 	print("🕒 Calculating time lasted for elimination...")
 	print("🕒 Main scene found: ", main_scene != null)
-	print("🔍 DEBUG: Searching for MainSceneManager...")
+	print("🕒 Calculating elapsed time using GameStateManager...")
 	
-	# Try to find the actual MainSceneManager
-	var scene_manager = null
-	if main_scene:
-		# Check if main_scene itself has the script
-		if main_scene.has_method("get_game_time_remaining"):
-			scene_manager = main_scene
-			print("🔍 Found MainSceneManager at /root/Main")
-		else:
-			# Look for children that might have the MainSceneManager script
-			for child in main_scene.get_children():
-				if child.has_method("get_game_time_remaining"):
-					scene_manager = child
-					print("🔍 Found MainSceneManager at child: ", child.name)
-					break
-		
-		if not scene_manager:
-			# Try alternative paths
-			scene_manager = get_node_or_null("/root/MainSceneManager")
-			if scene_manager and scene_manager.has_method("get_game_time_remaining"):
-				print("🔍 Found MainSceneManager at /root/MainSceneManager")
-			else:
-				scene_manager = null
-	
-	if scene_manager:
-		main_scene = scene_manager
-		print("🔍 Using scene_manager for time calculation")
+	# Use GameStateManager singleton for accurate time calculation
+	if GameStateManager.is_session_active():
+		var game_time_remaining = GameStateManager.get_game_time_remaining()
+		time_lasted = GameStateManager.GAME_DURATION - game_time_remaining
+		print("🕒 Game time remaining: ", game_time_remaining, " seconds")
+		print("🕒 Calculated time lasted: ", time_lasted, " seconds (", GameStateManager.GAME_DURATION, " - ", game_time_remaining, ")")
 	else:
-		print("🔍 No MainSceneManager found, using fallback")
-	
-	if main_scene:
-		print("🕒 Attempting time calculation with safe approach...")
-		# Set fallback first, then try to calculate actual time
+		# Fallback if GameStateManager session is not active
 		time_lasted = 30.0
-		print("🕒 Default fallback time set: ", time_lasted, " seconds")
-		
-		# Try to get actual time - if it works, great; if not, we keep fallback
-		print("🕒 Attempting to get game time remaining...")
-		print("🔍 DEBUG: main_scene type: ", typeof(main_scene))
-		print("🔍 DEBUG: main_scene class: ", main_scene.get_class())
-		print("🔍 DEBUG: has_method check: ", main_scene.has_method("get_game_time_remaining"))
-		if main_scene.has_method("get_game_time_remaining"):
-			var game_time_remaining = main_scene.get_game_time_remaining()
-			print("🕒 Game time remaining: ", game_time_remaining)
-			time_lasted = main_scene.GAME_DURATION - game_time_remaining
-			print("🕒 Calculated time lasted: ", time_lasted, " seconds")
-		else:
-			print("🕒 get_game_time_remaining method not found, keeping fallback time")
-	else:
-		print("❌ Could not find main scene for time calculation!")
-		time_lasted = 30.0  # Fallback time
-		print("🕒 Using fallback time: ", time_lasted, " seconds")
+		print("🕒 GameStateManager session not active, using fallback time: ", time_lasted, " seconds")
 	
 	# Check if this is the local player
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
@@ -1085,12 +1044,9 @@ func evaluate_end_game_condition():
 	print("📊 Evaluating end-game condition for LOCAL player: ", player_name)
 	print("📊 Final stats - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
 	
-	# Calculate time lasted (full game duration)
-	var main_scene = get_node("/root/Main")
-	var time_lasted = 60.0  # Full game duration since timer ended
-	if main_scene and main_scene.has_method("get_game_time_remaining"):
-		time_lasted = main_scene.GAME_DURATION
-		print("📊 Time lasted: ", time_lasted, " seconds (full game duration)")
+	# Calculate time lasted (full game duration since timer ended)
+	var time_lasted = GameStateManager.GAME_DURATION  # Full game duration since timer ended
+	print("📊 Time lasted: ", time_lasted, " seconds (full game duration)")
 	
 	# Determine outcome based on final stats
 	var final_outcome = ""
