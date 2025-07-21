@@ -1038,7 +1038,7 @@ func evaluate_end_game_condition():
 		return
 	
 	if is_eliminated:
-		print("🎯 Skipping evaluation - already eliminated")
+		print("🎯 Skipping evaluation - already eliminated (this should prevent data overwrite)")
 		return
 	
 	print("📊 Evaluating end-game condition for LOCAL player: ", player_name)
@@ -1067,6 +1067,16 @@ func evaluate_end_game_condition():
 	game_outcome = final_outcome
 	
 	print("📊 FINAL OUTCOME: ", final_outcome, " for player ", player_name)
+	
+	# Check if this player already has elimination data before processing
+	var existing_results = PlayerData.get_all_player_results()
+	if existing_results.has(player_name):
+		var existing_outcome = existing_results[player_name].get("outcome", "")
+		if existing_outcome in ["lose_ccat", "lose_social"]:
+			print("📡 WARNING: Player ", player_name, " already has elimination result: ", existing_outcome)
+			print("📡 This should not happen - skipping timer-end processing to prevent data corruption")
+			print("📡 PRESERVING existing game end data - NOT calling set_game_end_data")
+			return
 	
 	# Store player data and transition to GameEnd scene
 	print("📊 Storing game end data and transitioning to GameEnd scene...")

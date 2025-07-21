@@ -84,8 +84,8 @@ func setup_player_results():
 		game_data.ccat
 	)
 	
-	# Clear the data from PlayerData after loading
-	PlayerData.clear_game_end_data()
+	# Don't clear the data immediately - it may be needed if GameStateManager creates a new GameEnd scene when timer ends
+	# PlayerData.clear_game_end_data()  # Commented out to prevent data loss
 	
 	print("📊 Player results loaded from PlayerData")
 

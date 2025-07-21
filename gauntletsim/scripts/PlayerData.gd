@@ -85,7 +85,13 @@ func get_all_players() -> Dictionary:
     return players_data
 
 func set_game_end_data(outcome: String, name: String, time_lasted: float, health: int, social: int, ccat: int):
-    """Store game end data for scene transition"""
+    """Store game end data for scene transition - prevents overwriting elimination data"""
+    # Check if we already have elimination data and prevent overwriting
+    if game_end_outcome in ["lose_ccat", "lose_social"] and outcome in ["win", "lose_ccat", "lose_social"]:
+        print("📊 PREVENTING OVERWRITE - Already have elimination data: ", game_end_outcome, " for ", game_end_player_name)
+        print("📊 Ignoring new data: ", outcome, " for ", name, " - ", time_lasted, "s")
+        return
+    
     game_end_outcome = outcome
     game_end_player_name = name
     game_end_time_lasted = time_lasted
@@ -115,7 +121,18 @@ func clear_game_end_data():
     game_end_ccat = 0
 
 func add_player_result(result_player_name: String, outcome: String, time_lasted: float):
-    """Add a player's result to the global results"""
+    """Add a player's result to the global results - prevents overwriting elimination data"""
+    # Check if this player already has elimination data (lose_ccat or lose_social)
+    if all_player_results.has(result_player_name):
+        var existing_result = all_player_results[result_player_name]
+        var existing_outcome = existing_result.get("outcome", "")
+        
+        # Don't overwrite elimination data with timer-end data
+        if existing_outcome in ["lose_ccat", "lose_social"] and outcome in ["win", "lose_ccat", "lose_social"]:
+            print("📊 PlayerData: PREVENTING OVERWRITE - Player ", result_player_name, " already has elimination result: ", existing_outcome)
+            print("📊 PlayerData: Ignoring new result: ", outcome, " (", time_lasted, "s)")
+            return
+    
     all_player_results[result_player_name] = {
         "outcome": outcome,
         "time_lasted": time_lasted
