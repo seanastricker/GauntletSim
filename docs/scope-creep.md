@@ -8,6 +8,9 @@
 ## NPC Movement
 - NPCs just walk around in certain paths
 
+## Application Submission
+- can fill out application directly in game
+
 ## NPC AI chats
 - NPCs talk like they would in real life (AI - RAG)
 - Send out google form to gather people's personalities / photos to add as NPCs

@@ -183,6 +183,12 @@ func spawn_player_local(peer_id: int):
 		print("🎯 SPAWNING PLAYER - Peer ID: ", peer_id, " Position: ", player_instance.global_position)
 		print("🎯 Current multiplayer unique ID: ", multiplayer.get_unique_id())
 		print("🎯 Is this player local? ", peer_id == multiplayer.get_unique_id())
+		
+		# Set skip flag for decay timer setup if this is a scene transition
+		if is_entering_from_transition and player_instance.has_method("set_skip_decay_timer_setup"):
+			player_instance.set_skip_decay_timer_setup(true)
+			print("⏲️ Set skip flag for decay timer setup during transition")
+		
 		player_instance.initialize_player_with_id(peer_id)
 		
 		# Restore complete state if this is a scene transition
@@ -196,7 +202,8 @@ func restore_player_transition_state(player_instance: Node, peer_id: int):
 	print("🔄 Restoring transition state for player ", peer_id, " in main scene")
 	
 	# Get the complete state data for this scene transition
-	var complete_state = PlayerData.restore_player_state_for_scene(peer_id, "Main")
+	# Look for data that came FROM the Street scene (stored when transitioning TO main)
+	var complete_state = PlayerData.restore_player_state_for_scene(peer_id, "Street")
 	
 	if complete_state and not complete_state.is_empty():
 		print("🔄 Found complete state data for player ", peer_id)
@@ -227,6 +234,8 @@ func restore_player_transition_state(player_instance: Node, peer_id: int):
 				print("❌ Player instance does not have load_sprite method")
 		else:
 			print("⚠️  No sprite_path in state data or sprite_path is empty: ", complete_state.get("sprite_path", "MISSING"))
+		
+		# Restore other state properties
 		if "is_eliminated" in complete_state:
 			if "is_eliminated" in player_instance:
 				player_instance.is_eliminated = complete_state["is_eliminated"]
@@ -242,6 +251,18 @@ func restore_player_transition_state(player_instance: Node, peer_id: int):
 		if "last_direction" in complete_state:
 			if "last_direction" in player_instance:
 				player_instance.last_direction = complete_state["last_direction"]
+		
+		# Restore decay timer with remaining time if it was active
+		if "decay_timer_active" in complete_state and complete_state["decay_timer_active"]:
+			var remaining_time = complete_state.get("decay_timer_remaining", 0.0)
+			print("⏲️ Restoring decay timer: active=", complete_state["decay_timer_active"], ", remaining=", remaining_time, "s")
+			
+			if player_instance.has_method("setup_decay_timer"):
+				# Call setup_decay_timer with the remaining time instead of the default call
+				player_instance.setup_decay_timer(remaining_time)
+				print("✅ Decay timer restored with remaining time: ", remaining_time, " seconds")
+			else:
+				print("❌ Player instance does not have setup_decay_timer method")
 		
 		print("✅ Successfully restored complete state for player ", peer_id, " in main scene")
 		print("📊 Player stats: H:", player_instance.health, " S:", player_instance.social, " C:", player_instance.ccat_score)

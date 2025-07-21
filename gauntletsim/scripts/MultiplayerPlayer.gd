@@ -67,6 +67,9 @@ var is_eliminated: bool = false
 var game_outcome: String = ""  # "win", "lose_ccat", "lose_social", or ""
 var notification_label: Label
 
+# Player identification and initialization
+var skip_default_decay_timer_setup: bool = false  # Flag to skip default timer setup during transitions
+
 func _ready() -> void:
 	"""Initialize basic systems - player data will be loaded separately"""
 	print("🎮 MultiplayerPlayer _ready() called for peer_id: ", peer_id)
@@ -88,58 +91,44 @@ func _ready() -> void:
 	# Player data will be loaded when initialize_player() is called
 
 func initialize_player_with_id(id: int):
-	"""Load player data and configure the player - bypasses setter issues"""
-	print("🎮 ===== INITIALIZE_PLAYER_WITH_ID STARTING =====")
-	print("🎮 initialize_player_with_id() called with ID: ", id)
+	"""Initialize player with peer ID and set up systems"""
+	print("🎮 Initializing player with ID: ", id)
 	
-	print("🎮 About to set peer_id...")
-	# Set peer_id directly without using the setter
-	peer_id = id
-	print("🎮 Peer ID set directly to: ", peer_id)
+	# Set the peer ID first
+	set_peer_id_and_authority(id)
 	
-	# CRITICAL: Set multiplayer authority FIRST
-	print("🔧 Setting multiplayer authority for peer ", peer_id)
-	set_multiplayer_authority(peer_id)
-	print("🔧 ✅ Authority set successfully for ", peer_id)
+	# Add to player group for area detection (street transitions, etc.)
+	add_to_group("player")
+	print("👥 Added player to 'player' group for area detection")
 	
-	# Load player data based on peer_id
-	print("🎮 Current peer_id: ", peer_id)
-	print("🎮 All registered players: ", PlayerData.get_all_players())
-	print("🎮 Current multiplayer unique_id: ", multiplayer.get_unique_id())
-	
+	# Load player data from PlayerData singleton
 	var player_data = PlayerData.get_player_data(peer_id)
-	print("🎮 Retrieved player_data for peer ", peer_id, ": ", player_data)
-	
-	if player_data.is_empty():
-		print("🎮 Using fallback PlayerData: name='", PlayerData.player_name, "'")
-		# Fallback for host or single player
-		player_name = PlayerData.player_name
-		load_sprite(PlayerData.player_sprite_path)
+	if player_data:
+		player_name = player_data.get("name", "Player")
+		sprite_path = player_data.get("sprite_path", "")
+		
+		# Load the sprite
+		if sprite_path != "":
+			load_sprite(sprite_path)
+		
+		print("✅ Player data loaded: ", player_name, " (", sprite_path, ")")
 	else:
-		print("🎮 Using registry data: name='", player_data["name"], "'")
-		player_name = player_data["name"]
-		load_sprite(player_data["sprite_path"])
-		health = player_data["health"]
-		social = player_data["social"]
-		ccat_score = player_data["ccat_score"]
-		global_position = player_data["position"]
+		print("⚠️  No player data found for peer ", peer_id)
 	
-	# Setup UI - only visible for local player
-	setup_ui()
-	
-	# Connect to player registry updates to refresh names if needed
-	if not PlayerData.player_registry_updated.is_connected(_on_player_registry_updated):
-		PlayerData.player_registry_updated.connect(_on_player_registry_updated)
-	
-	# Connect to player elimination signal to hide eliminated players
+	# Connect to PlayerData elimination signal
 	if not PlayerData.player_eliminated.is_connected(_on_player_eliminated):
 		PlayerData.player_eliminated.connect(_on_player_eliminated)
 		print("🔌 Connected to PlayerData.player_eliminated signal for peer ", peer_id)
 	
+	# Setup UI for all players (but only visible for local player)
+	setup_ui()
 	call_deferred("setup_notification_ui")
 	
-	# Setup systems
-	setup_decay_timer()
+	# Setup systems - skip decay timer if this is a scene transition
+	if not skip_default_decay_timer_setup:
+		setup_decay_timer()
+	else:
+		print("⏲️ Skipping default decay timer setup - will be restored with transition state")
 	
 	# Start with idle animation for all players (local and remote)
 	update_animation(Vector2.ZERO)
@@ -676,21 +665,37 @@ func modify_ccat_score(amount: int) -> void:
 	else:
 		print("📊 Skipping CCAT change - not local player or already eliminated")
 
-func setup_decay_timer() -> void:
-	"""Initialize the stat decay system"""
+func setup_decay_timer(remaining_time: float = -1.0) -> void:
+	"""Initialize the stat decay system with optional remaining time restoration"""
 	var is_local_player = (peer_id == multiplayer.get_unique_id())
 	print("⏲️ SETUP_DECAY_TIMER - Player: ", player_name, " (Peer: ", peer_id, ")")
 	print("⏲️ Is Local Player: ", is_local_player)
+	print("⏲️ Remaining time provided: ", remaining_time)
 	print("⏲️ Multiplayer Unique ID: ", multiplayer.get_unique_id())
 	
 	if is_local_player:
 		print("⏲️ Setting up decay timer for LOCAL player ", player_name)
 		decay_timer = Timer.new()
-		decay_timer.wait_time = get_current_decay_rate()
-		decay_timer.autostart = true
+		
+		# Determine the timer duration
+		var timer_duration: float
+		if remaining_time > 0.0:
+			# Restore timer with remaining time from scene transition
+			timer_duration = remaining_time
+			print("⏲️ Restoring decay timer with remaining time: ", timer_duration, " seconds")
+		else:
+			# Start fresh timer with current decay rate
+			timer_duration = get_current_decay_rate()
+			print("⏲️ Starting new decay timer with full duration: ", timer_duration, " seconds")
+		
+		decay_timer.wait_time = timer_duration
+		decay_timer.one_shot = true  # Set to one_shot initially
 		decay_timer.timeout.connect(_on_decay_timer_timeout)
 		add_child(decay_timer)
-		print("⏲️ Decay timer created with wait_time: ", decay_timer.wait_time, " seconds")
+		
+		# Start the timer
+		decay_timer.start()
+		print("⏲️ Decay timer started with ", timer_duration, " seconds remaining")
 	else:
 		print("⏲️ NOT setting up decay timer - this is a REMOTE player")
 
@@ -714,6 +719,12 @@ func _on_decay_timer_timeout() -> void:
 		modify_social(-1)
 		modify_ccat_score(-1)
 		print("⏰ After decay - Health: ", health, " Social: ", social, " CCAT: ", ccat_score)
+		
+		# Restart the timer for continuous decay (since we use one_shot mode)
+		if decay_timer and not is_eliminated:
+			decay_timer.wait_time = get_current_decay_rate()
+			decay_timer.start()
+			print("⏰ Restarted decay timer for next cycle with wait_time: ", decay_timer.wait_time, " seconds")
 	else:
 		print("⏰ Skipping decay - not local player or already eliminated")
 

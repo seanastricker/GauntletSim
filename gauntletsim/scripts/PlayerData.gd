@@ -217,6 +217,7 @@ func store_complete_player_state(peer_id: int, player_data: Dictionary):
         # UI state information
         "ui_visible": player_data.get("ui_visible", false),
         "decay_timer_active": player_data.get("decay_timer_active", false),
+        "decay_timer_remaining": player_data.get("decay_timer_remaining", 0.0),  # Store remaining time
         # Interaction state
         "interaction_cooldowns": player_data.get("interaction_cooldowns", {}),
         "last_direction": player_data.get("last_direction", Vector2(0, 1))
@@ -224,15 +225,16 @@ func store_complete_player_state(peer_id: int, player_data: Dictionary):
     
     # Store scene-specific position
     var scene_name = player_data.get("scene", "")
-    if scene_name != "":
+    if scene_name != "" and scene_name != null:
         if not scene_specific_positions.has(peer_id):
             scene_specific_positions[peer_id] = {}
         scene_specific_positions[peer_id][scene_name] = player_data.get("position", Vector2.ZERO)
+        print("💾 Stored scene-specific position for player ", peer_id, " in ", scene_name, ": ", player_data.get("position", Vector2.ZERO))
+        
+        # Debug: Show decay timer info being stored
+        print("⏲️ Stored decay timer state for player ", peer_id, ": active=", player_data.get("decay_timer_active", false), ", remaining=", player_data.get("decay_timer_remaining", 0.0), "s")
     
-    # Update the main registry as well for backwards compatibility
-    players_data[peer_id] = player_data.duplicate()
-    
-    print("💾 Stored complete state for player ", peer_id, " in scene ", scene_name)
+    print("💾 Stored complete player state for peer ", peer_id)
     player_state_updated.emit(peer_id)
 
 func get_complete_player_state(peer_id: int) -> Dictionary:
