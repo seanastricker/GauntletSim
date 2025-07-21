@@ -14,10 +14,10 @@ size = Vector2(1052.5, 163)
 size = Vector2(50, 401.5)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Right"]
-size = Vector2(21, 795)
+size = Vector2(74.5, 795)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_Entrance"]
-size = Vector2(134, 101)
+size = Vector2(148, 106)
 
 [node name="Street" type="Node2D"]
 
@@ -32,7 +32,7 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/TopWall"]
-position = Vector2(-201.75, -203.5)
+position = Vector2(-203, -202)
 shape = SubResource("RectangleShape2D_Top")
 debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 
@@ -52,7 +52,7 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/LeftWall"]
-position = Vector2(-551, 71)
+position = Vector2(-513, 72)
 shape = SubResource("RectangleShape2D_Left")
 debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 
@@ -62,7 +62,7 @@ collision_layer = 2
 collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Boundaries/RightWall"]
-position = Vector2(133.5, -276.5)
+position = Vector2(117, -276)
 shape = SubResource("RectangleShape2D_Right")
 debug_color = Color(0.938859, 0.223192, 0.282661, 0.42)
 
@@ -78,11 +78,11 @@ spawn_path = NodePath(".")
 spawn_limit = 10
 
 [node name="OfficeEntrance" type="Area2D" parent="."]
-position = Vector2(50, 300)
+position = Vector2(257, 11)
 script = ExtResource("3")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="OfficeEntrance"]
-position = Vector2(208, -157.5)
+position = Vector2(-2, 132)
 shape = SubResource("RectangleShape2D_Entrance")
 
 [node name="InteractionPrompt" type="Label" parent="OfficeEntrance"]

@@ -1,4 +1,5 @@
 # MainSceneManager.gd - Manages multiplayer players in the main game scene
+# Now uses GameStateManager for timer and game state management
 extends Node2D
 
 @onready var multiplayer_spawner: MultiplayerSpawner = $MultiplayerSpawner
@@ -14,27 +15,31 @@ var spawn_positions = [
 # Track if client failed to spawn initially due to missing data
 var client_spawn_failed = false
 
-# Game Timer System
-const GAME_DURATION = 60.0  # 1 minute for testing (eventually 10 minutes)
-var game_time_remaining: float = GAME_DURATION
-var game_timer: Timer
-var is_game_active: bool = false
-var game_ended: bool = false
-
-# Timer UI
-var timer_label: Label
-
 # Game End Window
 var game_end_window: Control
 const GAME_END_WINDOW_SCENE = preload("res://scenes/GameEndWindow.tscn")
+
+# Scene transition tracking
+var is_entering_from_transition: bool = false
 
 func _ready():
 	"""Initialize the main scene with multiplayer support"""
 	print("MainSceneManager initializing...")
 	
-	# Clear previous game data when starting a new game
-	PlayerData.clear_all_player_results()
-	print("🧹 Cleared previous game results")
+	# Check if this is a scene transition or new game start
+	is_entering_from_transition = GameStateManager.is_session_active()
+	
+	if not is_entering_from_transition:
+		# New game start - clear previous data and initialize
+		PlayerData.clear_all_player_results()
+		print("🧹 Cleared previous game results")
+		
+		# Initialize GameStateManager for new game
+		GameStateManager.initialize_for_main_scene()
+	else:
+		# Scene transition - preserve existing game state
+		print("🔄 Entering from scene transition - preserving game state")
+		GameStateManager.initialize_for_scene_transition()
 	
 	# Setup multiplayer callbacks
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -44,9 +49,8 @@ func _ready():
 	# Connect to PlayerData signal for retry spawning
 	PlayerData.player_registry_updated.connect(_on_player_registry_updated)
 	
-	# Setup game timer and UI
-	setup_game_timer()
-	setup_timer_ui()
+	# Connect to GameStateManager signals
+	GameStateManager.game_timer_ended.connect(_on_game_ended)
 	
 	# Setup game end window
 	setup_game_end_window()
@@ -90,6 +94,9 @@ func spawn_all_players():
 	
 	# Tell all clients to spawn the same players
 	spawn_all_players_on_clients.rpc()
+	
+	# Start the game timer after players are spawned (if this is a new game)
+	call_deferred("start_game_timer_if_needed")
 
 @rpc("authority", "call_local", "reliable")
 func spawn_all_players_on_clients():
@@ -177,7 +184,69 @@ func spawn_player_local(peer_id: int):
 		print("🎯 Current multiplayer unique ID: ", multiplayer.get_unique_id())
 		print("🎯 Is this player local? ", peer_id == multiplayer.get_unique_id())
 		player_instance.initialize_player_with_id(peer_id)
+		
+		# Restore complete state if this is a scene transition
+		if is_entering_from_transition:
+			call_deferred("restore_player_transition_state", player_instance, peer_id)
+		
 		print("✅ ", node_type, " spawned player ", peer_id, " at position ", player_instance.global_position)
+
+func restore_player_transition_state(player_instance: Node, peer_id: int):
+	"""Restore player state from scene transition data"""
+	print("🔄 Restoring transition state for player ", peer_id, " in main scene")
+	
+	# Get the complete state data for this scene transition
+	var complete_state = PlayerData.restore_player_state_for_scene(peer_id, "Main")
+	
+	if complete_state and not complete_state.is_empty():
+		print("🔄 Found complete state data for player ", peer_id)
+		print("🔄 State data: ", complete_state)
+		
+		# Restore all player properties
+		if "health" in complete_state:
+			player_instance.health = complete_state["health"]
+			print("🔄 Restored health: ", complete_state["health"])
+		if "social" in complete_state:
+			player_instance.social = complete_state["social"]
+			print("🔄 Restored social: ", complete_state["social"])
+		if "ccat_score" in complete_state:
+			player_instance.ccat_score = complete_state["ccat_score"]
+			print("🔄 Restored ccat_score: ", complete_state["ccat_score"])
+		if "position" in complete_state:
+			player_instance.global_position = complete_state["position"]
+			print("🔄 Restored position: ", complete_state["position"])
+		if "name" in complete_state:
+			player_instance.player_name = complete_state["name"]
+			print("🔄 Restored name: ", complete_state["name"])
+		if "sprite_path" in complete_state and complete_state["sprite_path"] != "":
+			print("🎨 Restoring sprite: ", complete_state["sprite_path"])
+			if player_instance.has_method("load_sprite"):
+				player_instance.load_sprite(complete_state["sprite_path"])
+				print("✅ Sprite restoration attempted")
+			else:
+				print("❌ Player instance does not have load_sprite method")
+		else:
+			print("⚠️  No sprite_path in state data or sprite_path is empty: ", complete_state.get("sprite_path", "MISSING"))
+		if "is_eliminated" in complete_state:
+			if "is_eliminated" in player_instance:
+				player_instance.is_eliminated = complete_state["is_eliminated"]
+		if "game_outcome" in complete_state:
+			if "game_outcome" in player_instance:
+				player_instance.game_outcome = complete_state["game_outcome"]
+		if "ui_visible" in complete_state:
+			if "ui_visible" in player_instance:
+				player_instance.ui_visible = complete_state["ui_visible"]
+		if "interaction_cooldowns" in complete_state:
+			if "interaction_cooldowns" in player_instance:
+				player_instance.interaction_cooldowns = complete_state["interaction_cooldowns"]
+		if "last_direction" in complete_state:
+			if "last_direction" in player_instance:
+				player_instance.last_direction = complete_state["last_direction"]
+		
+		print("✅ Successfully restored complete state for player ", peer_id, " in main scene")
+		print("📊 Player stats: H:", player_instance.health, " S:", player_instance.social, " C:", player_instance.ccat_score)
+	else:
+		print("⚠️  No transition state found for player ", peer_id, " - using basic data")
 
 func create_fallback_host_player():
 	"""Create a fallback host player for single-player mode"""
@@ -207,97 +276,18 @@ func _on_server_disconnected():
 	print("Server disconnected!")
 	get_tree().change_scene_to_file("res://scenes/CharacterCreation.tscn")
 
-# === GAME TIMER SYSTEM ===
+# === GAME STATE MANAGEMENT ===
 
-func setup_game_timer():
-	"""Initialize the game timer system - runs on ALL players independently"""
-	print("🕒 Setting up LOCAL game timer for ", GAME_DURATION, " seconds")
-	
-	# Everyone runs their own timer - no host dependency!
-	game_timer = Timer.new()
-	game_timer.wait_time = 1.0  # Update every second
-	game_timer.autostart = false
-	game_timer.timeout.connect(_on_game_timer_tick)
-	add_child(game_timer)
-	
-	# Start timer after players spawn
-	call_deferred("start_game_timer")
+func _on_game_ended():
+	"""Handle game end signal from GameStateManager"""
+	print("🏁 Game ended signal received in MainSceneManager")
+	call_deferred("evaluate_all_players")
 
-func setup_timer_ui():
-	"""Create timer display UI with proper anchoring and container box"""
-	# Create a CanvasLayer for UI that stays on screen
-	var timer_canvas = CanvasLayer.new()
-	timer_canvas.name = "TimerCanvas"
-	add_child(timer_canvas)
-	
-	# Create the main timer container (anchored to top-left) - MUCH LARGER
-	var timer_container = Control.new()
-	timer_container.name = "TimerContainer"
-	timer_container.layout_mode = 3
-	timer_container.anchors_preset = 0  # Top-left preset
-	timer_container.anchor_left = 0.0
-	timer_container.anchor_right = 0.0
-	timer_container.anchor_top = 0.0
-	timer_container.anchor_bottom = 0.0
-	timer_container.offset_left = 15.0    # 15px from left edge
-	timer_container.offset_top = 15.0     # 15px from top edge
-	timer_container.offset_right = 265.0  # 250px wide container (much larger)
-	timer_container.offset_bottom = 95.0  # 80px tall container (much larger)
-	timer_container.z_index = 100
-	timer_canvas.add_child(timer_container)
-	
-	# Create background box for the timer - MUCH LARGER
-	var timer_background = ColorRect.new()
-	timer_background.name = "TimerBackground"
-	timer_background.color = Color(0.0, 0.0, 0.0, 0.8)  # Slightly more opaque for better visibility
-	timer_background.size = Vector2(250, 80)  # Much larger background
-	timer_background.position = Vector2(0, 0)
-	timer_background.z_index = 1
-	timer_container.add_child(timer_background)
-	
-	# Add border/frame effect - MUCH LARGER
-	var timer_border = ColorRect.new()
-	timer_border.name = "TimerBorder"
-	timer_border.color = Color.TRANSPARENT  # Transparent fill
-	timer_border.size = Vector2(250, 80)  # Much larger border
-	timer_border.position = Vector2(0, 0)
-	timer_border.z_index = 2
-	
-	# Create border using StyleBoxFlat with thicker borders
-	var border_style = StyleBoxFlat.new()
-	border_style.bg_color = Color.TRANSPARENT
-	border_style.border_width_left = 4    # Thicker borders for larger container
-	border_style.border_width_right = 4
-	border_style.border_width_top = 4
-	border_style.border_width_bottom = 4
-	border_style.border_color = Color.WHITE
-	border_style.corner_radius_top_left = 12    # Larger corner radius
-	border_style.corner_radius_top_right = 12
-	border_style.corner_radius_bottom_left = 12
-	border_style.corner_radius_bottom_right = 12
-	
-	# Apply border style to background
-	timer_background.add_theme_stylebox_override("normal", border_style)
-	timer_container.add_child(timer_border)
-	
-	# Create the timer label (centered in container) - MUCH LARGER
-	timer_label = Label.new()
-	timer_label.name = "TimerLabel"
-	timer_label.text = format_time(GAME_DURATION)
-	timer_label.size = Vector2(250, 80)  # Much larger label area
-	timer_label.position = Vector2(0, 0)
-	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	timer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	timer_label.z_index = 10
-	
-	# Style the timer label with MUCH LARGER font
-	timer_label.add_theme_font_size_override("font_size", 48)  # Much larger font (was 28)
-	timer_label.add_theme_color_override("font_color", Color.WHITE)
-	timer_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	timer_label.add_theme_constant_override("outline_size", 4)  # Thicker outline for larger text
-	
-	timer_container.add_child(timer_label)
-	print("🖥️ Timer UI created with LARGE size for maximum visibility")
+func trigger_game_start():
+	"""Trigger game start through GameStateManager"""
+	if not is_entering_from_transition and GameStateManager.is_session_active():
+		print("🚀 Triggering game start from MainSceneManager")
+		GameStateManager.start_game_timer()
 
 func setup_game_end_window():
 	"""Create and setup the game end window with proper top-right anchoring"""
@@ -343,73 +333,11 @@ func get_game_end_window() -> Control:
 	"""Get reference to the GameEndWindow for elimination updates"""
 	return game_end_window
 
-func start_game_timer():
-	"""Start the game timer (all players)"""
-	if not is_game_active and not game_ended:
-		print("🚀 Starting LOCAL game timer!")
-		is_game_active = true
-		game_timer.start()
-		
-		# Only server notifies clients that game has started (for UI sync)
-		if multiplayer.is_server():
-			game_started.rpc()
-
-@rpc("authority", "reliable")
-func game_started():
-	"""Notify clients that the game has started"""
-	is_game_active = true
-	print("🎮 Game started notification received!")
-
-func _on_game_timer_tick():
-	"""Handle timer tick - runs on ALL players independently"""
-	if game_ended:
-		return
-	
-	game_time_remaining -= 1.0
-	
-	# Update local timer display
-	update_timer_display()
-	
-	# Check if time is up locally
-	if game_time_remaining <= 0.0:
-		end_game()
-
-
-
-func update_timer_display():
-	"""Update the timer UI display"""
-	if timer_label:
-		timer_label.text = format_time(game_time_remaining)
-		
-		# Change color when time is running low
-		if game_time_remaining <= 10.0:
-			timer_label.add_theme_color_override("font_color", Color.RED)
-		elif game_time_remaining <= 30.0:
-			timer_label.add_theme_color_override("font_color", Color.YELLOW)
-		else:
-			timer_label.add_theme_color_override("font_color", Color.WHITE)
-
-func format_time(seconds: float) -> String:
-	"""Format seconds into MM:SS format"""
-	var minutes = int(seconds) / 60
-	var secs = int(seconds) % 60
-	return "%d:%02d" % [minutes, secs]
-
-func end_game():
-	"""End the game and evaluate all players"""
-	if game_ended:
-		return
-		
-	print("⏰ Game time is up! Evaluating all players...")
-	game_ended = true
-	is_game_active = false
-	
-	# Stop local timer
-	if game_timer:
-		game_timer.stop()
-	
-	# Evaluate win/lose conditions locally
-	call_deferred("evaluate_all_players")
+func start_game_timer_if_needed():
+	"""Start the game timer through GameStateManager if this is a new game"""
+	if not is_entering_from_transition and GameStateManager.is_session_active():
+		print("🚀 Starting game timer from MainSceneManager")
+		GameStateManager.start_game_timer()
 
 
 
@@ -430,9 +358,14 @@ func evaluate_all_players():
 			print("❌ Player ", player.name, " does not have evaluate_end_game_condition method")
 
 func get_game_time_remaining() -> float:
-	"""Get remaining game time"""
-	return game_time_remaining
+	"""Get remaining game time from GameStateManager"""
+	return GameStateManager.get_game_time_remaining()
 
 func is_game_running() -> bool:
-	"""Check if game is currently active"""
-	return is_game_active and not game_ended 
+	"""Check if game is currently active via GameStateManager"""
+	return GameStateManager.is_game_running()
+
+# Compatibility methods for existing code
+var GAME_DURATION: float:
+	get:
+		return GameStateManager.GAME_DURATION 

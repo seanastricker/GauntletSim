@@ -1,7 +1,12 @@
 # StreetSceneManager.gd - Manages multiplayer players in the street scene
+# Uses GameStateManager for consistent game state across scenes
 extends Node2D
 
 @onready var multiplayer_spawner: MultiplayerSpawner = $MultiplayerSpawner
+
+# Game End Window
+var game_end_window: Control
+const GAME_END_WINDOW_SCENE = preload("res://scenes/GameEndWindow.tscn")
 
 # Spawn positions for different players on the street
 var spawn_positions = [
@@ -14,9 +19,22 @@ var spawn_positions = [
 # Track if client failed to spawn initially due to missing data
 var client_spawn_failed = false
 
+# Scene transition tracking
+var is_entering_from_transition: bool = false
+
 func _ready():
 	"""Initialize the street scene with multiplayer support"""
 	print("StreetSceneManager initializing...")
+	
+	# This should always be a scene transition since street isn't the starting scene
+	is_entering_from_transition = true
+	
+	# Initialize GameStateManager for scene transition
+	print("🔄 Entering street scene from transition - preserving game state")
+	GameStateManager.initialize_for_scene_transition()
+	
+	# Setup game end window for player elimination tracking
+	setup_game_end_window()
 	
 	# Setup multiplayer callbacks
 	multiplayer.peer_connected.connect(_on_peer_connected)
@@ -25,6 +43,9 @@ func _ready():
 	
 	# Connect to PlayerData signal for retry spawning
 	PlayerData.player_registry_updated.connect(_on_player_registry_updated)
+	
+	# Connect to GameStateManager signals
+	GameStateManager.game_timer_ended.connect(_on_game_ended)
 	
 	# Check if we have an active multiplayer session
 	if multiplayer.has_multiplayer_peer() and PlayerData.get_all_players().size() > 0:
@@ -127,11 +148,76 @@ func initialize_spawned_player(player_instance: Node, peer_id: int, player_data:
 	# Wait a frame to ensure the player is fully in the scene tree
 	await get_tree().process_frame
 	
-	if player_instance and is_instance_valid(player_instance) and player_instance.has_method("initialize_player"):
-		player_instance.initialize_player(peer_id, player_data)
-		print("✅ Player ", peer_id, " initialized successfully in street")
+	if player_instance and is_instance_valid(player_instance):
+		# First use basic initialization
+		if player_instance.has_method("initialize_player_with_id"):
+			player_instance.initialize_player_with_id(peer_id)
+			print("✅ Basic initialization completed for player ", peer_id)
+		
+		# Then restore complete state if this is a scene transition
+		if is_entering_from_transition:
+			restore_player_transition_state(player_instance, peer_id)
+		
+		print("✅ Player ", peer_id, " fully initialized in street")
 	else:
 		print("❌ Failed to initialize player ", peer_id, " in street")
+
+func restore_player_transition_state(player_instance: Node, peer_id: int):
+	"""Restore player state from scene transition data"""
+	print("🔄 Restoring transition state for player ", peer_id, " in street")
+	
+	# Get the complete state data for this scene transition
+	var complete_state = PlayerData.restore_player_state_for_scene(peer_id, "Street")
+	
+	if complete_state and not complete_state.is_empty():
+		print("🔄 Found complete state data for player ", peer_id)
+		print("🔄 State data: ", complete_state)
+		
+		# Restore all player properties
+		if "health" in complete_state:
+			player_instance.health = complete_state["health"]
+			print("🔄 Restored health: ", complete_state["health"])
+		if "social" in complete_state:
+			player_instance.social = complete_state["social"]
+			print("🔄 Restored social: ", complete_state["social"])
+		if "ccat_score" in complete_state:
+			player_instance.ccat_score = complete_state["ccat_score"]
+			print("🔄 Restored ccat_score: ", complete_state["ccat_score"])
+		if "position" in complete_state:
+			player_instance.global_position = complete_state["position"]
+			print("🔄 Restored position: ", complete_state["position"])
+		if "name" in complete_state:
+			player_instance.player_name = complete_state["name"]
+			print("🔄 Restored name: ", complete_state["name"])
+		if "sprite_path" in complete_state and complete_state["sprite_path"] != "":
+			print("🎨 Restoring sprite: ", complete_state["sprite_path"])
+			if player_instance.has_method("load_sprite"):
+				player_instance.load_sprite(complete_state["sprite_path"])
+				print("✅ Sprite restoration attempted")
+			else:
+				print("❌ Player instance does not have load_sprite method")
+		else:
+			print("⚠️  No sprite_path in state data or sprite_path is empty: ", complete_state.get("sprite_path", "MISSING"))
+		if "is_eliminated" in complete_state:
+			if "is_eliminated" in player_instance:
+				player_instance.is_eliminated = complete_state["is_eliminated"]
+		if "game_outcome" in complete_state:
+			if "game_outcome" in player_instance:
+				player_instance.game_outcome = complete_state["game_outcome"]
+		if "ui_visible" in complete_state:
+			if "ui_visible" in player_instance:
+				player_instance.ui_visible = complete_state["ui_visible"]
+		if "interaction_cooldowns" in complete_state:
+			if "interaction_cooldowns" in player_instance:
+				player_instance.interaction_cooldowns = complete_state["interaction_cooldowns"]
+		if "last_direction" in complete_state:
+			if "last_direction" in player_instance:
+				player_instance.last_direction = complete_state["last_direction"]
+		
+		print("✅ Successfully restored complete state for player ", peer_id, " in street")
+		print("📊 Player stats: H:", player_instance.health, " S:", player_instance.social, " C:", player_instance.ccat_score)
+	else:
+		print("⚠️  No transition state found for player ", peer_id, " - using basic data")
 
 func create_fallback_host_player():
 	"""Create a fallback player for single-player mode"""
@@ -178,4 +264,82 @@ func _on_player_registry_updated():
 	if client_spawn_failed and not multiplayer.is_server():
 		print("Retrying failed client spawn in street...")
 		client_spawn_failed = false
-		call_deferred("spawn_all_players") 
+		call_deferred("spawn_all_players")
+
+func _on_game_ended():
+	"""Handle game end signal from GameStateManager"""
+	print("🏁 Game ended signal received in StreetSceneManager")
+	call_deferred("evaluate_all_players")
+
+func evaluate_all_players():
+	"""Evaluate win/lose conditions for all players when game ends"""
+	print("📊 Evaluating all players for win/lose conditions in street...")
+	
+	# Get all player nodes
+	var players = get_children().filter(func(child): return child.name.begins_with("Player_"))
+	print("📊 Found ", players.size(), " player nodes to evaluate")
+	
+	for player in players:
+		print("📊 Checking player: ", player.name)
+		if player.has_method("evaluate_end_game_condition"):
+			print("📊 Calling evaluate_end_game_condition for ", player.name)
+			player.evaluate_end_game_condition()
+		else:
+			print("❌ Player ", player.name, " does not have evaluate_end_game_condition method")
+
+# Compatibility methods for existing code that expects these methods
+func get_game_time_remaining() -> float:
+	"""Get remaining game time from GameStateManager"""
+	return GameStateManager.get_game_time_remaining()
+
+func is_game_running() -> bool:
+	"""Check if game is currently active via GameStateManager"""
+	return GameStateManager.is_game_running()
+
+func setup_game_end_window():
+	"""Create and setup the game end window with proper top-right anchoring"""
+	# Create a CanvasLayer for UI that stays on screen (same as timer)
+	var game_end_canvas = CanvasLayer.new()
+	game_end_canvas.name = "GameEndCanvas"
+	add_child(game_end_canvas)
+	
+	# Create the game end window container (anchored to top-right)
+	var game_end_container = Control.new()
+	game_end_container.name = "GameEndContainer"
+	game_end_container.layout_mode = 3
+	game_end_container.anchors_preset = 2  # Top-right preset
+	game_end_container.anchor_left = 1.0   # Right edge
+	game_end_container.anchor_right = 1.0  # Right edge
+	game_end_container.anchor_top = 0.0    # Top edge
+	game_end_container.anchor_bottom = 0.0 # Top edge
+	game_end_container.offset_left = -535.0   # 535px from right edge (2x larger: 520px + 15px margin)
+	game_end_container.offset_top = 15.0      # 15px from top edge
+	game_end_container.offset_right = -15.0   # 15px from right edge (negative)
+	game_end_container.offset_bottom = 625.0  # 610px tall container (2x larger: 305*2 + 15px top margin)
+	game_end_container.z_index = 100
+	game_end_canvas.add_child(game_end_container)
+	
+	# Instantiate the GameEndWindow scene and add it to the container
+	game_end_window = GAME_END_WINDOW_SCENE.instantiate()
+	game_end_window.anchors_preset = 15  # Fill preset to fill the container
+	game_end_window.anchor_left = 0.0
+	game_end_window.anchor_right = 1.0
+	game_end_window.anchor_top = 0.0
+	game_end_window.anchor_bottom = 1.0
+	game_end_window.offset_left = 0.0
+	game_end_window.offset_top = 0.0
+	game_end_window.offset_right = 0.0
+	game_end_window.offset_bottom = 0.0
+	game_end_container.add_child(game_end_window)
+	
+	print("🎯 GameEndWindow anchored to top-right corner using CanvasLayer")
+	print("🎯 Container position - Left: ", game_end_container.anchor_left, " Top: ", game_end_container.anchor_top)
+	print("🎯 Container offsets - Left: ", game_end_container.offset_left, " Right: ", game_end_container.offset_right)
+
+func get_game_end_window() -> Control:
+	"""Get reference to the GameEndWindow for elimination updates"""
+	return game_end_window
+
+var GAME_DURATION: float:
+	get:
+		return GameStateManager.GAME_DURATION 

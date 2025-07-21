@@ -340,9 +340,15 @@ func _on_back_pressed():
 		multiplayer_peer.close()
 	multiplayer.multiplayer_peer = null
 	
+	# Clean up GameStateManager
+	if GameStateManager.is_session_active():
+		print("🧹 Ending game session before returning to character creation")
+		GameStateManager.end_game_session()
+	
 	# Clear multiplayer data to start fresh
 	PlayerData.clear_all_player_results()
 	PlayerData.clear_player_registry()  # CRITICAL: Clear multiplayer registry to prevent duplicates
+	PlayerData.clear_scene_transition_data()  # Clear scene transition data
 	print("🧹 Cleared multiplayer data for return to character creation")
 	
 	# Return to character creation scene
@@ -411,6 +417,14 @@ func start_game():
 	"""Transition all players to the main game scene"""
 	print("🚀 start_game() called - transitioning to Main scene...")
 	print("🚀 About to call get_tree().change_scene_to_file()...")
+	
+	# Clear any existing game state before starting new game
+	if GameStateManager.is_session_active():
+		print("🧹 Ending existing game session before starting new one")
+		GameStateManager.end_game_session()
+	
+	# Clear scene transition data for new game
+	PlayerData.clear_scene_transition_data()
 	
 	var result = get_tree().change_scene_to_file("res://scenes/Main.tscn")
 	print("🚀 Scene transition result: ", result)

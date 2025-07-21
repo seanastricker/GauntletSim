@@ -6,11 +6,16 @@ extends Node
 var player_name: String
 var player_sprite_path: String
 
-# Multiplayer player registry
+# Multiplayer player registry - now enhanced with complete state
 var players_data: Dictionary = {}
+
+# Enhanced player state storage for scene transitions
+var complete_player_states: Dictionary = {}
+var scene_specific_positions: Dictionary = {}  # {peer_id: {scene_name: position}}
 
 # Signal emitted when player registry is synchronized from server
 signal player_registry_updated
+signal player_state_updated(peer_id: int)
 
 # Game end data for transitions
 var game_end_outcome: String = ""
@@ -22,8 +27,8 @@ var game_end_ccat: int = 0
 
 # All players' results for GameEnd scene
 var all_player_results: Dictionary = {}
-signal player_result_added(player_name: String, outcome: String, time_lasted: float)
-signal player_eliminated(player_name: String, peer_id: int)
+signal player_result_added(result_player_name: String, outcome: String, time_lasted: float)
+signal player_eliminated(eliminated_player_name: String, peer_id: int)
 
 func register_player(peer_id: int, display_name: String, sprite_path: String):
     """Register a player's data for multiplayer synchronization"""
@@ -109,19 +114,19 @@ func clear_game_end_data():
     game_end_social = 0
     game_end_ccat = 0
 
-func add_player_result(player_name: String, outcome: String, time_lasted: float):
+func add_player_result(result_player_name: String, outcome: String, time_lasted: float):
     """Add a player's result to the global results"""
-    all_player_results[player_name] = {
+    all_player_results[result_player_name] = {
         "outcome": outcome,
         "time_lasted": time_lasted
     }
-    print("📊 PlayerData: Added result for ", player_name, " - ", outcome, " (", time_lasted, "s)")
+    print("📊 PlayerData: Added result for ", result_player_name, " - ", outcome, " (", time_lasted, "s)")
     print("📊 PlayerData: Total results now: ", all_player_results.size())
     print("📊 PlayerData: All results: ", all_player_results)
     
     # Emit signal for GameEnd scenes to listen to
-    print("📊 PlayerData: EMITTING SIGNAL for ", player_name)
-    player_result_added.emit(player_name, outcome, time_lasted)
+    print("📊 PlayerData: EMITTING SIGNAL for ", result_player_name)
+    player_result_added.emit(result_player_name, outcome, time_lasted)
     print("📊 PlayerData: Signal emitted successfully")
 
 func get_all_player_results() -> Dictionary:
@@ -129,15 +134,15 @@ func get_all_player_results() -> Dictionary:
     return all_player_results
 
 @rpc("any_peer", "call_local", "reliable")
-func sync_player_result_across_scenes(player_name: String, outcome: String, time_lasted: float, eliminated_peer_id: int = -1):
+func sync_player_result_across_scenes(result_player_name: String, outcome: String, time_lasted: float, eliminated_peer_id: int = -1):
     """RPC to sync player results across all scenes (including GameEnd.tscn)"""
-    print("🌐 PlayerData RPC RECEIVED: ", player_name, " - ", outcome, " (", time_lasted, "s)")
-    add_player_result(player_name, outcome, time_lasted)
+    print("🌐 PlayerData RPC RECEIVED: ", result_player_name, " - ", outcome, " (", time_lasted, "s)")
+    add_player_result(result_player_name, outcome, time_lasted)
     
     # Emit elimination signal if this is an elimination (not a game end)
     if eliminated_peer_id != -1 and (outcome == "lose_ccat" or outcome == "lose_social"):
-        print("🚨 Emitting player_eliminated signal for ", player_name, " (peer ", eliminated_peer_id, ")")
-        player_eliminated.emit(player_name, eliminated_peer_id)
+        print("🚨 Emitting player_eliminated signal for ", result_player_name, " (peer ", eliminated_peer_id, ")")
+        player_eliminated.emit(result_player_name, eliminated_peer_id)
 
 func clear_all_player_results():
     """Clear all player results"""
@@ -175,4 +180,140 @@ func update_player_position(peer_id: int, position: Vector2):
 
 func is_multiplayer_active() -> bool:
     """Check if we're in a multiplayer session"""
-    return multiplayer.has_multiplayer_peer() and players_data.size() > 1 
+    return multiplayer.has_multiplayer_peer() and players_data.size() > 1
+
+# === ENHANCED PLAYER STATE MANAGEMENT ===
+
+func store_complete_player_state(peer_id: int, player_data: Dictionary):
+    """Store complete player state for scene transitions"""
+    complete_player_states[peer_id] = {
+        "name": player_data.get("name", ""),
+        "sprite_path": player_data.get("sprite_path", ""),
+        "health": player_data.get("health", 50),
+        "social": player_data.get("social", 50),
+        "ccat_score": player_data.get("ccat_score", 50),
+        "position": player_data.get("position", Vector2.ZERO),
+        "current_scene": player_data.get("scene", ""),
+        "is_eliminated": player_data.get("is_eliminated", false),
+        "game_outcome": player_data.get("game_outcome", ""),
+        "last_updated": Time.get_unix_time_from_system(),
+        # UI state information
+        "ui_visible": player_data.get("ui_visible", false),
+        "decay_timer_active": player_data.get("decay_timer_active", false),
+        # Interaction state
+        "interaction_cooldowns": player_data.get("interaction_cooldowns", {}),
+        "last_direction": player_data.get("last_direction", Vector2(0, 1))
+    }
+    
+    # Store scene-specific position
+    var scene_name = player_data.get("scene", "")
+    if scene_name != "":
+        if not scene_specific_positions.has(peer_id):
+            scene_specific_positions[peer_id] = {}
+        scene_specific_positions[peer_id][scene_name] = player_data.get("position", Vector2.ZERO)
+    
+    # Update the main registry as well for backwards compatibility
+    players_data[peer_id] = player_data.duplicate()
+    
+    print("💾 Stored complete state for player ", peer_id, " in scene ", scene_name)
+    player_state_updated.emit(peer_id)
+
+func get_complete_player_state(peer_id: int) -> Dictionary:
+    """Get complete player state"""
+    return complete_player_states.get(peer_id, {})
+
+func get_player_position_for_scene(peer_id: int, scene_name: String) -> Vector2:
+    """Get player's last known position for a specific scene"""
+    if scene_specific_positions.has(peer_id) and scene_specific_positions[peer_id].has(scene_name):
+        return scene_specific_positions[peer_id][scene_name]
+    
+    # Fallback to default spawn positions
+    var spawn_positions = [
+        Vector2(22, 306),   # Host spawn position for office
+        Vector2(100, 250),  # Host spawn position for street
+        Vector2(50, 306),   # Player 2 spawn (office)
+        Vector2(78, 306),   # Player 3 spawn (office)
+        Vector2(106, 306)   # Player 4 spawn (office)
+    ]
+    
+    # Determine appropriate spawn position based on scene and peer ID
+    var base_index = 0 if scene_name == "Street" else 0
+    var offset = max(0, peer_id - 1) if peer_id > 1 else 0
+    var spawn_index = base_index + offset
+    
+    if spawn_index < spawn_positions.size():
+        return spawn_positions[spawn_index]
+    else:
+        return spawn_positions[0]
+
+func restore_player_state_for_scene(peer_id: int, target_scene: String) -> Dictionary:
+    """Restore player state optimized for target scene"""
+    var complete_state = get_complete_player_state(peer_id)
+    if complete_state.is_empty():
+        print("⚠️ No complete state found for player ", peer_id, ", using basic data")
+        return get_player_data(peer_id)
+    
+    # Update position for target scene
+    var scene_position = get_player_position_for_scene(peer_id, target_scene)
+    complete_state["position"] = scene_position
+    complete_state["current_scene"] = target_scene
+    
+    print("🔄 Restored state for player ", peer_id, " transitioning to ", target_scene)
+    return complete_state
+
+func update_player_scene_info(peer_id: int, scene_name: String, position: Vector2):
+    """Update player's current scene and position"""
+    if complete_player_states.has(peer_id):
+        complete_player_states[peer_id]["current_scene"] = scene_name
+        complete_player_states[peer_id]["position"] = position
+        complete_player_states[peer_id]["last_updated"] = Time.get_unix_time_from_system()
+        
+        # Store scene-specific position
+        if not scene_specific_positions.has(peer_id):
+            scene_specific_positions[peer_id] = {}
+        scene_specific_positions[peer_id][scene_name] = position
+    
+    # Update main registry as well
+    if players_data.has(peer_id):
+        players_data[peer_id]["position"] = position
+
+func get_players_in_scene(scene_name: String) -> Array:
+    """Get all players currently in a specific scene"""
+    var players_in_scene = []
+    for peer_id in complete_player_states:
+        var state = complete_player_states[peer_id]
+        if state.get("current_scene", "") == scene_name and not state.get("is_eliminated", false):
+            players_in_scene.append({
+                "peer_id": peer_id,
+                "name": state.get("name", ""),
+                "position": state.get("position", Vector2.ZERO)
+            })
+    return players_in_scene
+
+func mark_player_eliminated(peer_id: int, outcome: String):
+    """Mark a player as eliminated"""
+    if complete_player_states.has(peer_id):
+        complete_player_states[peer_id]["is_eliminated"] = true
+        complete_player_states[peer_id]["game_outcome"] = outcome
+        complete_player_states[peer_id]["last_updated"] = Time.get_unix_time_from_system()
+    
+    # Update main registry as well
+    if players_data.has(peer_id):
+        players_data[peer_id]["is_eliminated"] = true
+        players_data[peer_id]["game_outcome"] = outcome
+
+func clear_scene_transition_data():
+    """Clear scene transition data for new game"""
+    complete_player_states.clear()
+    scene_specific_positions.clear()
+    print("🧹 Cleared all scene transition data")
+
+# Enhanced store_player_data for backward compatibility
+func store_player_data(peer_id: int, player_data: Dictionary):
+    """Enhanced store_player_data that also updates complete state"""
+    # Update main registry (existing functionality)
+    players_data[peer_id] = player_data.duplicate()
+    
+    # Also store in complete state system if we have enough data
+    if player_data.has("name") and player_data.has("sprite_path"):
+        store_complete_player_state(peer_id, player_data) 

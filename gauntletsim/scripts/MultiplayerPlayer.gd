@@ -23,6 +23,7 @@ extends CharacterBody2D
 
 # Movement configuration
 @export var speed: float = 200.0
+var base_speed: float = 200.0  # Store original speed for scaling
 
 # Player identification
 @export var player_name: String = "":
@@ -30,6 +31,9 @@ extends CharacterBody2D
 		player_name = value
 		if name_label:
 			name_label.text = player_name
+
+# Sprite management
+@export var sprite_path: String = ""
 
 # Multiplayer-specific properties
 @export var peer_id: int = 1:
@@ -75,6 +79,10 @@ func _ready() -> void:
 	print("🎮 _ready(): Setting up animation...")
 	update_animation(Vector2.ZERO)
 	print("🎮 _ready(): Animation setup complete")
+	
+	print("🎮 _ready(): Adjusting sprite scale and speed for scene...")
+	adjust_scale_and_speed_for_scene()
+	print("🎮 _ready(): Sprite scale and speed adjustment complete")
 	
 	print("🎮 _ready(): Ready function complete!")
 	# Player data will be loaded when initialize_player() is called
@@ -542,6 +550,10 @@ func load_sprite(sprite_path: String):
 	"""Load and configure player sprite animations"""
 	if not sprite_path:
 		return
+	
+	# Store the sprite path for persistence
+	self.sprite_path = sprite_path
+	print("🎨 Stored sprite path: ", sprite_path, " for player ", player_name)
 		
 	var sprite_sheet = load(sprite_path)
 	if not sprite_sheet:
@@ -712,6 +724,73 @@ func setup_collision():
 		var rect_shape = RectangleShape2D.new()
 		rect_shape.size = Vector2(24, 17)
 		collision_shape.shape = rect_shape
+
+func adjust_scale_and_speed_for_scene():
+	"""Adjust sprite scale, movement speed, and UI elements based on current scene to maintain consistent player size and movement"""
+	if not animated_sprite:
+		return
+	
+	var current_scene = get_tree().current_scene
+	if not current_scene:
+		return
+	
+	var scene_name = current_scene.scene_file_path.get_file().get_basename()
+	print("🎨 Adjusting sprite scale, speed, and UI for scene: ", scene_name)
+	
+	# Base scale from the scene file
+	var base_scale = Vector2(2, 2)
+	var base_ui_scale = Vector2(1, 1)  # Base UI scale
+	# Base name label offsets from scene file
+	var base_name_left = -30.0
+	var base_name_right = 30.0
+	var base_name_top = -68.0
+	var base_name_bottom = -45.0
+	
+	# Camera zoom levels:
+	# Main scene: 4x zoom
+	# Street scene: 1.2x zoom  
+	# Scale factor = Main zoom / Current zoom
+	match scene_name:
+		"Main":
+			# Main scene has 4x zoom, keep original scale and speed
+			animated_sprite.scale = base_scale
+			speed = base_speed
+			# Keep UI at original scale and position
+			if name_label:
+				name_label.scale = base_ui_scale
+				name_label.offset_left = base_name_left
+				name_label.offset_right = base_name_right
+				name_label.offset_top = base_name_top
+				name_label.offset_bottom = base_name_bottom
+			print("🎨 Main scene - keeping original scale: ", base_scale, " speed: ", speed, " UI scale: ", base_ui_scale)
+		"Street":
+			# Street scene has 1.2x zoom, need to scale up by 4/1.2 = 3.33
+			var scale_factor = 4.0 / 1.2  # 3.33
+			animated_sprite.scale = base_scale * scale_factor
+			speed = base_speed * scale_factor
+			# Scale UI elements to match sprite scaling - keep same relative positioning as Main scene
+			if name_label:
+				name_label.scale = base_ui_scale * scale_factor
+				# Keep original offsets - the scaling should handle proportional positioning automatically
+				name_label.offset_left = base_name_left
+				name_label.offset_right = base_name_right
+				name_label.offset_top = base_name_top
+				name_label.offset_bottom = base_name_bottom
+				# Manual position adjustment to center above player: left and up
+				name_label.position = Vector2(-100.0, -220.0)
+			print("🎨 Street scene - scaling up by ", scale_factor, " - sprite: ", animated_sprite.scale, " speed: ", speed, " UI offsets: ", name_label.offset_left if name_label else "N/A", ",", name_label.offset_top if name_label else "N/A")
+		_:
+			# Unknown scene, keep original scale and speed
+			animated_sprite.scale = base_scale
+			speed = base_speed
+			# Keep UI at original scale and position
+			if name_label:
+				name_label.scale = base_ui_scale
+				name_label.offset_left = base_name_left
+				name_label.offset_right = base_name_right
+				name_label.offset_top = base_name_top
+				name_label.offset_bottom = base_name_bottom
+			print("🎨 Unknown scene - keeping original scale: ", base_scale, " speed: ", speed, " UI scale: ", base_ui_scale)
 
 func update_animation(input_vector: Vector2) -> void:
 	"""Update character animation based on movement"""

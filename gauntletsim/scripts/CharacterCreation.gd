@@ -27,11 +27,18 @@ var character_sprites = [
 var current_sprite_index = 0
 
 func _ready():
+	print("🎮 CharacterCreation: Starting _ready()")
+	
 	# Clear any previous game data when returning to character creation
 	PlayerData.clear_all_player_results()
 	PlayerData.clear_game_end_data()
 	PlayerData.clear_player_registry()  # CRITICAL: Clear multiplayer registry to prevent duplicates
 	print("🧹 CharacterCreation: Cleared all previous game data")
+	
+	# Clean up GameStateManager if it has an active session
+	if GameStateManager.is_session_active():
+		print("🧹 CharacterCreation: Ending GameStateManager session")
+		GameStateManager.end_game_session()
 	
 	# SAFETY: Clean up any lingering multiplayer connections
 	if multiplayer.has_multiplayer_peer():
@@ -42,17 +49,51 @@ func _ready():
 	else:
 		print("🧹 CharacterCreation: No multiplayer connections to clean up")
 	
-	start_button.pressed.connect(_on_start_button_pressed)
-	help_button.pressed.connect(_on_help_button_pressed)
-	previous_button.pressed.connect(_on_previous_button_pressed)
-	next_button.pressed.connect(_on_next_button_pressed)
-	name_edit.grab_focus()
+	# Check if UI nodes are valid before connecting
+	if is_instance_valid(start_button):
+		start_button.pressed.connect(_on_start_button_pressed)
+		print("✅ CharacterCreation: Connected start button")
+	else:
+		print("❌ CharacterCreation: start_button is null!")
+	
+	if is_instance_valid(help_button):
+		help_button.pressed.connect(_on_help_button_pressed)
+		print("✅ CharacterCreation: Connected help button")
+	else:
+		print("❌ CharacterCreation: help_button is null!")
+	
+	if is_instance_valid(previous_button):
+		previous_button.pressed.connect(_on_previous_button_pressed)
+		print("✅ CharacterCreation: Connected previous button")
+	else:
+		print("❌ CharacterCreation: previous_button is null!")
+	
+	if is_instance_valid(next_button):
+		next_button.pressed.connect(_on_next_button_pressed)
+		print("✅ CharacterCreation: Connected next button")
+	else:
+		print("❌ CharacterCreation: next_button is null!")
+	
+	if is_instance_valid(name_edit):
+		name_edit.grab_focus()
+		print("✅ CharacterCreation: Name edit focus set")
+	else:
+		print("❌ CharacterCreation: name_edit is null!")
 	
 	setup_sexy_ui()
 	update_character_sprite()
+	
+	print("🎮 CharacterCreation: _ready() complete")
 
 func setup_sexy_ui():
 	"""Configure modern, attractive UI styling"""
+	print("🎨 CharacterCreation: Setting up UI styling")
+	
+	# Check if name_edit exists before styling
+	if not is_instance_valid(name_edit):
+		print("❌ CharacterCreation: name_edit is null in setup_sexy_ui!")
+		return
+	
 	# === SEXY NAME INPUT STYLING ===
 	name_edit.add_theme_font_size_override("font_size", 32)
 	name_edit.placeholder_text = "Player Name"
@@ -335,9 +376,16 @@ func _on_name_changed(new_text: String):
 
 func _on_start_button_pressed():
 	"""Handle start button press with visual feedback"""
-	var player_name = name_edit.text
-	if player_name.is_empty():
-		player_name = "Player"
+	print("🚀 CharacterCreation: Start button pressed")
+	
+	# Check if name_edit is valid
+	var player_name = "Player"
+	if is_instance_valid(name_edit):
+		player_name = name_edit.text
+		if player_name.is_empty():
+			player_name = "Player"
+	else:
+		print("⚠️ CharacterCreation: name_edit is null, using default name")
 	
 	print("🏗️ Character created: '", player_name, "'")
 	
@@ -349,10 +397,19 @@ func _on_start_button_pressed():
 	
 	# Brief delay for visual feedback before scene transition
 	await get_tree().create_timer(0.3).timeout
-	get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
+	
+	print("🎬 CharacterCreation: Transitioning to lobby")
+	var result = get_tree().change_scene_to_file("res://scenes/Lobby.tscn")
+	if result != OK:
+		print("❌ CharacterCreation: Failed to change scene to lobby: ", result)
 
 func animate_start_button_press():
 	"""Animate start button press for satisfying feedback"""
+	# Check if start_button is valid
+	if not is_instance_valid(start_button):
+		print("⚠️ CharacterCreation: start_button is null in animate_start_button_press")
+		return
+	
 	# Disable button to prevent double-clicks
 	start_button.disabled = true
 	
@@ -410,8 +467,26 @@ func animate_character_selection(direction: String):
 
 func update_character_sprite():
 	"""Update character sprite with enhanced visual styling"""
+	print("🖼️ CharacterCreation: Updating character sprite")
+	
+	# Check if texture_rect exists
+	if not is_instance_valid(texture_rect):
+		print("❌ CharacterCreation: texture_rect is null in update_character_sprite!")
+		return
+	
+	# Validate current_sprite_index
+	if current_sprite_index < 0 or current_sprite_index >= character_sprites.size():
+		print("❌ CharacterCreation: Invalid sprite index: ", current_sprite_index)
+		current_sprite_index = 0
+	
+	# Check if sprite file exists
+	var sprite_path = character_sprites[current_sprite_index]
+	if not ResourceLoader.exists(sprite_path):
+		print("❌ CharacterCreation: Sprite file doesn't exist: ", sprite_path)
+		return
+	
 	var atlas_texture = AtlasTexture.new()
-	atlas_texture.atlas = load(character_sprites[current_sprite_index])
+	atlas_texture.atlas = load(sprite_path)
 	atlas_texture.region = Rect2(48, 0, 16, 32)
 	texture_rect.texture = atlas_texture
 	
@@ -420,6 +495,7 @@ func update_character_sprite():
 	
 	# Add character counter feedback
 	print("Character " + str(current_sprite_index + 1) + "/" + str(character_sprites.size()) + " selected!")
+	print("✅ CharacterCreation: Sprite updated successfully")
 
 func _on_help_button_pressed():
 	"""Handle help button press and navigate to rules screen"""

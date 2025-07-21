@@ -14,7 +14,7 @@ func _on_body_entered(body):
     if body.is_in_group("player"):
         # Check if this is the local player (multiplayer-compatible)
         var is_local_player = true
-        if body.has_method("get") and body.get("peer_id") != null:
+        if "peer_id" in body and body.peer_id != null:
             # This is a MultiplayerPlayer - check if it's the local player
             is_local_player = (body.peer_id == multiplayer.get_unique_id())
         
@@ -25,7 +25,7 @@ func _on_body_exited(body):
     if body.is_in_group("player"):
         # Check if this is the local player (multiplayer-compatible)
         var is_local_player = true
-        if body.has_method("get") and body.get("peer_id") != null:
+        if "peer_id" in body and body.peer_id != null:
             # This is a MultiplayerPlayer - check if it's the local player
             is_local_player = (body.peer_id == multiplayer.get_unique_id())
         
@@ -41,7 +41,7 @@ func _process(_delta):
             if body.is_in_group("player") and body.has_method("work_at_desk"):
                 # Check if this is the local player (multiplayer-compatible)
                 var is_local_player = true
-                if body.has_method("get") and body.get("peer_id") != null:
+                if "peer_id" in body and body.peer_id != null:
                     # This is a MultiplayerPlayer - check if it's the local player
                     is_local_player = (body.peer_id == multiplayer.get_unique_id())
                 
